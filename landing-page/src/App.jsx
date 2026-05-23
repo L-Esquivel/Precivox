@@ -1,121 +1,119 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import viteLogo from '/vite.svg'
+import React, { useState, useEffect } from 'react';
+import { getSubdomain } from './utils/subdomain';
+import { storefrontService } from './services/storefrontService';
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [store, setStore] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadStoreData = async () => {
+      const subdomain = getSubdomain(window.location.hostname);
+
+      if (!subdomain) {
+        setError('Could not determine the store to display.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await storefrontService.getStorefrontData(subdomain);
+        setStore(data);
+
+        // Dynamically set brand colors from the database
+        document.documentElement.style.setProperty('--primary-color', data.settings.brand_color_primary);
+        document.documentElement.style.setProperty('--secondary-color', data.settings.brand_color_secondary);
+
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStoreData();
+  }, []);
+
+  const getImageUrl = (imgName) => {
+    if (!imgName) return 'https://via.placeholder.com/400x300';
+    if (imgName.startsWith('http')) return imgName; // It's a Cloudinary URL
+    // Fallback for old, local images
+    return `<https://sweetland-by-anny-production.up.railway.app/static/images/${imgName}>`;
+  };
+
+  if (loading) {
+    return <div className="loading-screen"><h1>Loading Store...</h1></div>;
+  }
+
+  if (error) {
+    return <div className="error-screen"><h1>Error</h1><p>{error}</p></div>;
+  }
+
+  if (!store) {
+    return <div className="error-screen"><h1>Store not found.</h1></div>;
+  }
+
+  const { settings, products } = store;
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
         </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
     </>
+    <div className="storefront-container">
+      <header className="store-header" style={{ backgroundImage: `url(${getImageUrl(settings.hero_image_url)})` }}>
+        <div className="header-overlay">
+          {settings.logo_url && <img src={getImageUrl(settings.logo_url)} alt="Store Logo" className="store-logo" />}
+          <h1>{settings.welcome_title}</h1>
+          <p>{settings.welcome_subtitle}</p>
+        </div>
+      </header>
+
+      <main className="products-grid">
+        {products.map(product => (
+          <div key={product.id_producto} className="product-card">
+            <img src={getImageUrl(product.imagen)} alt={product.nombre} />
+            <div className="product-info">
+              <h3>{product.nombre}</h3>
+              <p>{product.descripcion}</p>
+              <div className="product-price">${new Intl.NumberFormat('es-CO').format(product.precio)}</div>
+            </div>
+          </div>
+        ))}
+      </main>
+
+      <footer className="store-footer">
+        <p>&copy; {new Date().getFullYear()} {settings.welcome_title}. All rights reserved.</p>
+        <div className="social-links">
+          {settings.social_instagram_url && <a href={settings.social_instagram_url} target="_blank" rel="noopener noreferrer">Instagram</a>}
+          {settings.social_whatsapp_number && <a href={`<https://wa.me/${settings.social_whatsapp_number}>`} target="_blank" rel="noopener noreferrer">WhatsApp</a>}
+        </div>
+      </footer>
+    </div>
   )
 }
 
