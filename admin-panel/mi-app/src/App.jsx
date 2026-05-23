@@ -14,6 +14,7 @@ import GastosList from './components/gastos/GastosList';
 import MermaList from './components/merma/MermaList';
 import TenantsList from './components/tenants/TenantsList';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import StorefrontSettings from './components/storefront/StorefrontSettings';
 import SupportModal from './components/support/SupportModal';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
       case 'gastos': return <GastosList />;
       case 'merma': return <MermaList />;
       case 'tenants': return <TenantsList />;
+      case 'storefront': return <StorefrontSettings />;
       case 'inicio': return <Dashboard user={user} />;
       default: return <Dashboard user={user} />;
     }
@@ -105,6 +107,9 @@ function App() {
                     </button>
                   </li>
                 ))}
+                <li className="nav-item">
+                  <button className={`nav-link w-100 text-start ${activeSection === 'storefront' ? 'active' : ''}`} onClick={() => setActiveSection('storefront')}>🛍️ {t('menu.storefront')}</button>
+                </li>
                 <hr className="text-white-50" />
                 <li className="nav-item">
                   <button className="nav-link w-100 text-start" onClick={() => setShowSupportModal(true)}>❓ {t('support')}</button>
