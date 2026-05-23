@@ -1,11 +1,12 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 const Sidebar = ({ onShowSupport }) => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const location = useLocation();
 
   // This is the original logic from your App.jsx, which is crucial.
   const labelToTKey = {
@@ -18,43 +19,46 @@ const Sidebar = ({ onShowSupport }) => {
     'Merma': 'menu.waste',
   };
 
-  // NavLink adds an 'active' class by default, which your App.css uses.
-  const getNavLinkClass = ({ isActive }) => `nav-button ${isActive ? 'active' : ''}`;
+  // This function now returns the Bootstrap classes that your original design used.
+  // NavLink will automatically add the 'active' class, which Bootstrap styles correctly.
+  const getNavLinkClass = ({ isActive }) => `nav-link w-100 text-start text-white ${isActive ? 'active' : ''}`;
 
   return (
     <nav className="sidebar">
-      <ul className="nav-menu">
-        <li>
+      {/* This uses the original Bootstrap list structure */}
+      <ul className="nav nav-pills flex-column p-3">
+        <li className="nav-item">
           <NavLink to="/dashboard" className={getNavLinkClass}>
             📊 {t('homeDashboard')}
           </NavLink>
         </li>
 
         {user?.rol === 'superadmin' && (
-          <li>
+          <li className="nav-item">
             <NavLink to="/tenants" className={getNavLinkClass}>
               🏢 {t('tenants')}
             </NavLink>
           </li>
         )}
-        
+
         {user?.rol === 'admin' && (
           <>
             {user.module_settings?.map(module => (
-              <li key={module.module_key}>
+              <li className="nav-item" key={module.module_key}>
                 <NavLink to={`/${module.module_key.toLowerCase()}`} className={getNavLinkClass}>
                   {module.icon} {t(labelToTKey[module.label] || module.label)}
                 </NavLink>
               </li>
             ))}
-            <li>
+            <li className="nav-item">
               <NavLink to="/storefront-settings" className={getNavLinkClass}>
                 🛍️ {t('menu.storefront')}
               </NavLink>
             </li>
-            <hr />
-            <li>
-              <button className="nav-button" onClick={onShowSupport}>
+            <hr className="text-white-50" />
+            <li className="nav-item">
+              {/* This remains a button as it triggers a modal, not a route change */}
+              <button className="nav-link w-100 text-start text-white" onClick={onShowSupport}>
                 ❓ {t('support')}
               </button>
             </li>

@@ -37,7 +37,7 @@ const Layout = () => {
 
       <div className="app-body">
         <Sidebar onShowSupport={() => setShowSupportModal(true)} />
-        <main className="main-content">
+        <main className="main-content p-4">
           <Outlet />
         </main>
         <SupportModal show={showSupportModal} onClose={() => setShowSupportModal(false)} />
