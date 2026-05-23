@@ -5,7 +5,7 @@ import { pedidosService } from '../../services/pedidosService';
 import { productosService } from '../../services/productosService';
 import PedidoForm from './PedidoForm';
 import EditarPedidoModal from './EditarPedidoModal';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency } from '/src/utils/formatters';
 
 const PedidosList = () => {
   const { t, i18n } = useTranslation();
