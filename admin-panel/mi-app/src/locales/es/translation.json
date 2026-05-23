@@ -55,6 +55,8 @@
   "common.cancel": "Cancelar",
   "common.actions": "Acciones",
   "common.loading": "Cargando...",
+  "common.visible": "Visible",
+  "common.hidden": "Oculto",
   "common.delete_confirm_title": "Confirmar Eliminación",
   "common.delete_confirm_text": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
   "common.no_data": "No hay datos disponibles.",
@@ -370,5 +372,8 @@
   "waste.success_create": "Registro de merma creado exitosamente.",
   "storefront.settings.title": "Configuración de la Tienda Pública",
   "storefront.settings.description": "Administra las secciones y la apariencia de tu página pública aquí.",
-  "storefront.settings.comingSoon": "¡Las opciones de personalización estarán disponibles pronto!"
+  "storefront.settings.comingSoon": "¡Las opciones de personalización estarán disponibles pronto!",
+  "storefront.settings.addSection": "Añadir Sección",
+  "storefront.settings.noSections": "Aún no has configurado ninguna sección. ¡Empieza añadiendo una!",
+  "storefront.errors.load_sections": "Error al cargar la configuración de la tienda."
 }
