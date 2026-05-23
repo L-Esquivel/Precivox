@@ -134,6 +134,14 @@ def delete_storefront_section(section_id):
             conn.commit()
             return jsonify({"message": "Section deleted successfully"}), 200
 
+    except errors.UndefinedTable:
+        conn.rollback()
+        current_app.logger.error(
+            f"CRITICAL: Attempt to delete a storefront section failed because 'storefront_sections' table does not exist. Tenant ID: {tenant_id}. "
+            "The database schema is out of date. Please run the necessary migrations."
+        )
+        # Return 503 Service Unavailable, as the service is not ready to handle this request
+        return jsonify({"error": "Feature not available: Database is not up to date."}), 503
     except Exception as e:
         conn.rollback()
         current_app.logger.error(f"Error deleting storefront section {section_id} for tenant {tenant_id}: {e}")
