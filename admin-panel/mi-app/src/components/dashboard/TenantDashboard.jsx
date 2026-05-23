@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { pedidosService } from '../../services/pedidosService';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './TenantDashboard.css';
 
 const TenantDashboard = ({ user }) => {
   const [stats, setStats] = useState(null);
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -29,7 +31,7 @@ const TenantDashboard = ({ user }) => {
         const data = await pedidosService.getStats(appliedFilters.startDate, appliedFilters.endDate);
         setStats(data);
       } catch (err) {
-        setError('Could not load statistics. Please try again.');
+        setError(t('tenantDashboard.loadError'));
         console.error(err);
       } finally {
         setLoading(false);
@@ -46,7 +48,7 @@ const TenantDashboard = ({ user }) => {
   const handleApplyFilters = () => {
     // Simple validation to prevent invalid ranges
     if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
-      setError('Start date cannot be after the end date.');
+      setError(t('tenantDashboard.dateError'));
       return;
     }
     setError('');
@@ -59,7 +61,7 @@ const TenantDashboard = ({ user }) => {
   };
 
   if (loading) {
-    return <div className="text-center p-5"><h3>Loading Dashboard...</h3></div>;
+    return <div className="text-center p-5"><h3>{t('tenantDashboard.loading')}</h3></div>;
   }
 
   if (error) {
@@ -68,21 +70,21 @@ const TenantDashboard = ({ user }) => {
 
   return (
     <div className="container-fluid p-4">
-      <h2 className="mb-4">{user?.tenant_name || 'Your Business'} Dashboard</h2>
+      <h2 className="mb-4">{t('tenantDashboard.title', { tenantName: user?.tenant_name || t('tenantDashboard.yourBusiness') })}</h2>
 
       {/* Date Range Picker */}
       <div className="card mb-4">
         <div className="card-body d-flex justify-content-center align-items-center flex-wrap gap-3">
           <div className="me-3">
-            <label htmlFor="startDate" className="form-label">From</label>
+            <label htmlFor="startDate" className="form-label">{t('tenantDashboard.from')}</label>
             <input type="date" id="startDate" name="startDate" className="form-control" value={dateRange.startDate} onChange={handleDateChange} />
           </div>
           <div>
-            <label htmlFor="endDate" className="form-label">To</label>
+            <label htmlFor="endDate" className="form-label">{t('tenantDashboard.to')}</label>
             <input type="date" id="endDate" name="endDate" className="form-control" value={dateRange.endDate} onChange={handleDateChange} />
           </div>
           <div className="align-self-end">
-            <button className="btn btn-primary" onClick={handleApplyFilters}>Apply</button>
+            <button className="btn btn-primary" onClick={handleApplyFilters}>{t('tenantDashboard.apply')}</button>
           </div>
         </div>
       </div>
@@ -93,7 +95,7 @@ const TenantDashboard = ({ user }) => {
           <div className="col-md-6 col-lg-3">
             <div className="card text-white bg-success h-100">
               <div className="card-body">
-                <h5 className="card-title">Total Sales</h5>
+                <h5 className="card-title">{t('tenantDashboard.totalSales')}</h5>
                 <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_sales_range)}</p>
               </div>
             </div>
@@ -101,7 +103,7 @@ const TenantDashboard = ({ user }) => {
           <div className="col-md-6 col-lg-3">
             <div className="card text-white bg-primary h-100">
               <div className="card-body">
-                <h5 className="card-title">Total Orders</h5>
+                <h5 className="card-title">{t('tenantDashboard.totalOrders')}</h5>
                 <p className="card-text fs-4 fw-bold">{stats.summary.num_orders_range}</p>
               </div>
             </div>
@@ -109,7 +111,7 @@ const TenantDashboard = ({ user }) => {
           <div className="col-md-6 col-lg-3">
             <div className="card text-white bg-warning h-100">
               <div className="card-body">
-                <h5 className="card-title">Total Expenses</h5>
+                <h5 className="card-title">{t('tenantDashboard.totalExpenses')}</h5>
                 <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_expenses_range)}</p>
               </div>
             </div>
@@ -117,7 +119,7 @@ const TenantDashboard = ({ user }) => {
           <div className="col-md-6 col-lg-3">
             <div className="card text-white bg-danger h-100">
               <div className="card-body">
-                <h5 className="card-title">Total Waste</h5>
+                <h5 className="card-title">{t('tenantDashboard.totalWaste')}</h5>
                 <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_waste_range)}</p>
               </div>
             </div>
@@ -128,7 +130,7 @@ const TenantDashboard = ({ user }) => {
       {/* Sales Chart */}
       <div className="card">
         <div className="card-header">
-          <h5>Sales by Day</h5>
+          <h5>{t('tenantDashboard.salesByDay')}</h5>
         </div>
         <div className="card-body">
           {stats?.sales_chart_data && stats.sales_chart_data.length > 0 ? (
@@ -145,7 +147,7 @@ const TenantDashboard = ({ user }) => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-center text-muted p-5">No sales data to display for this period.</p>
+            <p className="text-center text-muted p-5">{t('tenantDashboard.noData')}</p>
           )}
         </div>
       </div>

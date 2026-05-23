@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +22,7 @@ const Login = () => {
       }
       // The redirection and role verification logic now lives in AuthContext and App.jsx
     } catch (err) {
-      setError('Server connection error');
+      setError(t('login.serverError'));
     } finally {
       setLoading(false);
     }
@@ -57,13 +59,13 @@ const Login = () => {
             opacity: 0.9,
             marginBottom: '5px'
           }}>
-            Welcome to your Control Panel
+            {t('login.welcome')}
           </p>
           <p style={{ 
             fontSize: '0.9rem',
             opacity: 0.7
           }}>
-            Business Intelligence for Entrepreneurs
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -79,7 +81,7 @@ const Login = () => {
             marginBottom: '25px',
             color: '#333'
           }}>
-            Sign In
+            {t('login.signIn')}
           </h4>
           
           <form onSubmit={handleSubmit}>
@@ -93,7 +95,7 @@ const Login = () => {
                   borderRadius: '6px',
                   fontSize: '1rem'
                 }}
-                placeholder="Email Address"
+                placeholder={t('login.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -111,7 +113,7 @@ const Login = () => {
                   borderRadius: '6px',
                   fontSize: '1rem'
                 }}
-                placeholder="Password"
+                placeholder={t('login.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -134,7 +136,7 @@ const Login = () => {
               }}
               disabled={loading}
             >
-              {loading ? 'Loading...' : 'Sign In'}
+              {loading ? t('login.loading') : t('login.signIn')}
             </button>
           </form>
 
