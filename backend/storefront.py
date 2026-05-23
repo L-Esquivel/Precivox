@@ -23,20 +23,23 @@ def get_storefront_sections():
                 "SELECT * FROM storefront_sections WHERE tenant_id = %s ORDER BY display_order ASC",
                 (tenant_id,)
             )
-            sections_raw = cursor.fetchall()
+            rows = cursor.fetchall()
             
-            # Convert raw data to a list of dicts for JSON serialization
+            # Convert rows to a list of dictionaries and handle non-serializable types
             sections = []
-            for row in sections_raw:
+            for row in rows:
                 section = dict(row)
-                # Ensure datetime objects are JSON serializable
-                if isinstance(section.get('created_at'), datetime.datetime):
+                # Convert datetime objects to ISO 8601 strings for JSON compatibility.
+                # The check for `isinstance` is a good practice for robustness.
+                if section.get('created_at') and isinstance(section.get('created_at'), datetime.datetime):
                     section['created_at'] = section['created_at'].isoformat()
-                if isinstance(section.get('updated_at'), datetime.datetime):
+                if section.get('updated_at') and isinstance(section.get('updated_at'), datetime.datetime):
                     section['updated_at'] = section['updated_at'].isoformat()
                 sections.append(section)
 
             return jsonify(sections)
     except Exception as e:
+        # Log the detailed error for debugging on the server
         current_app.logger.error(f"Error fetching storefront sections for tenant {tenant_id}: {e}")
-        return jsonify({"error": "Failed to load storefront configuration"}), 500
+        # Return a generic error to the client
+        return jsonify({"error": "An internal error occurred while loading the storefront configuration."}), 500

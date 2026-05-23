@@ -375,5 +375,5 @@
   "storefront.settings.comingSoon": "¡Las opciones de personalización estarán disponibles pronto!",
   "storefront.settings.addSection": "Añadir Sección",
   "storefront.settings.noSections": "Aún no has configurado ninguna sección. ¡Empieza añadiendo una!",
-  "storefront.errors.load_sections": "Error al cargar la configuración de la tienda."
+  "storefront.errors.load_sections": "Ocurrió un error al cargar la configuración. Por favor, intenta de nuevo o contacta a soporte."
 }
