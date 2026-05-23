@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './PedidosList.css';
 import { pedidosService } from '../../services/pedidosService';
 import { productosService } from '../../services/productosService';
@@ -6,6 +7,7 @@ import PedidoForm from './PedidoForm';
 import EditarPedidoModal from './EditarPedidoModal';
 
 const PedidosList = () => {
+  const { t, i18n } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ const PedidosList = () => {
       setProducts(productosData);
     } catch (error) {
       console.error('Error loading data:', error);
-      setError('Could not load data');
+      setError(t('ordersList.errors.load_data'));
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,7 @@ const PedidosList = () => {
       setSelectedOrderId(pedidoId);
     } catch (error) {
       console.error('Error loading details:', error);
-      setError('Could not load order details');
+      setError(t('ordersList.errors.load_details'));
     }
   };
 
@@ -91,7 +93,7 @@ const PedidosList = () => {
       closeStatusModal();
     } catch (error) {
       console.error('Error updating status:', error);
-      setError('Could not update order status');
+      setError(t('ordersList.errors.update_status'));
     }
   };
 
@@ -102,7 +104,7 @@ const PedidosList = () => {
       closeNewOrderModal();
     } catch (error) {
       console.error('Error creating order:', error);
-      setError('Could not create order');
+      setError(t('ordersList.errors.create_order'));
       throw error;
     }
   };
@@ -132,7 +134,7 @@ const PedidosList = () => {
       closeEditOrderModal();
     } catch (error) {
       console.error('Error editing order:', error);
-      setError('Could not edit order');
+      setError(t('ordersList.errors.edit_order'));
       throw error;
     }
   };
@@ -143,7 +145,8 @@ const PedidosList = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const lang = i18n.language === 'es' ? 'es-ES' : 'en-US';
+    return new Date(dateString).toLocaleDateString(lang, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -153,9 +156,10 @@ const PedidosList = () => {
   };
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
+    const lang = i18n.language === 'es' ? 'es-CO' : 'en-US';
+    return new Intl.NumberFormat(lang, {
       style: 'currency',
-      currency: 'USD'
+      currency: 'COP', // Assuming Colombian Pesos
     }).format(value || 0);
   };
 
@@ -165,7 +169,7 @@ const PedidosList = () => {
       const receiptWindow = window.open('', '_blank');
       const receiptContent = `
         <!DOCTYPE html>
-        <html>
+        <html lang="${i18n.language}">
         <head>
           <title>Receipt - Order #${order.id_pedido}</title>
           <style>
@@ -188,26 +192,26 @@ const PedidosList = () => {
         <body>
           <div class="recibo">
             <div class="header">
-              <h1>Precivox Bakery</h1>
-              <div class="subtitle">Delicious treats made with love</div>
-              <div class="subtitle">Order #${order.id_pedido}</div>
+              <h1>Precivox</h1>
+              <div class="subtitle">${t('ordersList.receipt.subtitle')}</div>
+              <div class="subtitle">${t('ordersList.table.id')} #${order.id_pedido}</div>
             </div>
             <div class="info-section">
-              <h3>📋 Order Information</h3>
-              <div class="info-row"><span>Date:</span><span>${new Date(order.fecha_pedido).toLocaleDateString('en-US')}</span></div>
-              <div class="info-row"><span>Status:</span><span>${order.estado}</span></div>
+              <h3>📋 ${t('ordersList.receipt.order_info')}</h3>
+              <div class="info-row"><span>${t('ordersList.table.date')}:</span><span>${new Date(order.fecha_pedido).toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'en-US')}</span></div>
+              <div class="info-row"><span>${t('ordersList.table.status')}:</span><span>${order.estado}</span></div>
             </div>
             <div class="info-section">
-              <h3>👤 Customer Information</h3>
-              <div class="info-row"><span>Name:</span><span>${order.cliente_nombre}</span></div>
-              <div class="info-row"><span>Phone:</span><span>${order.cliente_telefono}</span></div>
-              <div class="info-row"><span>Address:</span><span>${order.direccion}</span></div>
+              <h3>👤 ${t('ordersList.receipt.customer_info')}</h3>
+              <div class="info-row"><span>${t('usersList.table.name')}:</span><span>${order.cliente_nombre}</span></div>
+              <div class="info-row"><span>${t('usersList.form.phone')}:</span><span>${order.cliente_telefono}</span></div>
+              <div class="info-row"><span>${t('usersList.form.address')}:</span><span>${order.direccion}</span></div>
             </div>
             <div class="info-section">
-              <h3>🛒 Order Items</h3>
+              <h3>🛒 ${t('ordersList.receipt.order_items')}</h3>
               <table class="productos-table">
                 <thead>
-                  <tr><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+                  <tr><th>${t('ordersList.details.table.product')}</th><th>${t('ordersList.details.table.qty')}</th><th>${t('ordersList.details.table.price')}</th><th>${t('ordersList.details.table.subtotal')}</th></tr>
                 </thead>
                 <tbody>
                   ${details.map(detail => `
@@ -219,17 +223,17 @@ const PedidosList = () => {
                     </tr>
                   `).join('')}
                   <tr class="total-row">
-                    <td colspan="3" style="text-align: right;"><strong>TOTAL:</strong></td>
+                    <td colspan="3" style="text-align: right;"><strong>${t('ordersList.details.total').toUpperCase()}</strong></td>
                     <td><strong>${formatCurrency(details.reduce((sum, d) => sum + (parseFloat(d.subtotal) || 0), 0))}</strong></td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div class="footer">
-              <div>Thank you for your purchase!</div>
-              <div>Precivox Bakery - ${new Date().getFullYear()}</div>
+              <div>${t('ordersList.receipt.thank_you')}</div>
+              <div>Precivox - ${new Date().getFullYear()}</div>
               <button class="no-print" onclick="window.print()" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                🖨️ Print Receipt
+                🖨️ ${t('ordersList.receipt.print_button')}
               </button>
             </div>
           </div>
@@ -240,17 +244,9 @@ const PedidosList = () => {
       receiptWindow.document.close();
     } catch (error) {
       console.error('Error generating receipt:', error);
-      alert('Error generating receipt. Please try again.');
+      alert(t('ordersList.receipt.generate_error'));
     }
   };
-
-  const statuses = [
-    { value: 'pendiente', label: '⏳ Pending' },
-    { value: 'confirmado', label: '✅ Confirmed' },
-    { value: 'en_preparacion', label: '👨‍🍳 In Preparation' },
-    { value: 'completado', label: '🎉 Completed' },
-    { value: 'cancelado', label: '❌ Canceled' }
-  ];
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -263,14 +259,22 @@ const PedidosList = () => {
     }
   };
 
-  if (loading) return <div className="text-center p-4">Loading orders...</div>;
+  const statuses = [
+    { value: 'pendiente', label: `⏳ ${t('ordersList.status.pending')}` },
+    { value: 'confirmado', label: `✅ ${t('ordersList.status.confirmed')}` },
+    { value: 'en_preparacion', label: `👨‍🍳 ${t('ordersList.status.in_preparation')}` },
+    { value: 'completado', label: `🎉 ${t('ordersList.status.completed')}` },
+    { value: 'cancelado', label: `❌ ${t('ordersList.status.canceled')}` }
+  ];
+
+  if (loading) return <div className="text-center p-4">{t('ordersList.loading')}</div>;
 
   return (
     <div className="pedidos-container">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">📦 Order Management</h2>
+        <h2 className="mb-0">📦 {t('ordersList.title')}</h2>
         <button className="btn btn-success" onClick={openNewOrderModal}>
-          ➕ New Order
+          ➕ {t('ordersList.new_order')}
         </button>
       </div>
 
@@ -281,26 +285,26 @@ const PedidosList = () => {
         <div className={selectedOrderId ? 'col-md-8' : 'col-12'}>
           <div className="card">
             <div className="card-header bg-light">
-              <h5 className="mb-0">Orders List</h5>
+              <h5 className="mb-0">{t('ordersList.list_title')}</h5>
             </div>
             <div className="card-body p-0">
               <div className="table-responsive">
                 <table className="table table-striped table-hover mb-0">
                   <thead className="table-dark">
                     <tr>
-                      <th>ID</th>
-                      <th>Customer</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Total</th>
-                      <th className="text-center">Actions</th>
+                      <th>{t('ordersList.table.id')}</th>
+                      <th>{t('ordersList.table.customer')}</th>
+                      <th>{t('ordersList.table.date')}</th>
+                      <th>{t('ordersList.table.status')}</th>
+                      <th>{t('ordersList.table.total')}</th>
+                      <th className="text-center">{t('common.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {orders.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="text-center text-muted py-4">
-                          No orders registered yet
+                          {t('ordersList.no_orders')}
                         </td>
                       </tr>
                     ) : (
@@ -319,7 +323,7 @@ const PedidosList = () => {
                             <button
                               className={`btn btn-sm ${getStatusBadgeClass(order.estado)}`}
                               onClick={() => openStatusChangeModal(order)}
-                              title="Click to change status"
+                              title={t('ordersList.status_modal.title')}
                             >
                               {statuses.find(e => e.value === order.estado)?.label || order.estado}
                             </button>
@@ -330,16 +334,16 @@ const PedidosList = () => {
                               <button
                                 className="btn btn-info btn-sm me-1"
                                 onClick={() => fetchOrderDetails(order.id_pedido)}
-                                title="View details"
+                                title={t('ordersList.actions.details')}
                               >
-                                👁️ Details
+                                👁️ {t('ordersList.actions.details')}
                               </button>
                               <button
                                 className="btn btn-outline-primary btn-sm"
                                 onClick={() => generateReceipt(order)}
-                                title="Generate receipt"
+                                title={t('ordersList.actions.receipt')}
                               >
-                                🧾 Receipt
+                                🧾 {t('ordersList.actions.receipt')}
                               </button>
                             </div>
                           </td>
@@ -358,14 +362,14 @@ const PedidosList = () => {
           <div className="col-md-4">
             <div className="card">
               <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Order Details #{selectedOrderId}</h5>
+                <h5 className="mb-0">{t('ordersList.details.title', { id: selectedOrderId })}</h5>
                 <button className="btn btn-sm btn-light" onClick={closeDetailsPanel}>✕</button>
               </div>
               <div className="card-body">
                 {orderDetails.length > 0 ? (
                   <div>
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h6 className="mb-0">Order Products</h6>
+                      <h6 className="mb-0">{t('ordersList.details.products')}</h6>
                       <button
                         className="btn btn-warning btn-sm"
                         onClick={() => {
@@ -373,17 +377,17 @@ const PedidosList = () => {
                           if (order) openEditOrderModal(order);
                         }}
                       >
-                        ✏️ Edit Order
+                        ✏️ {t('ordersList.details.edit_order')}
                       </button>
                     </div>
                     <div className="table-responsive">
                       <table className="table table-sm">
                         <thead>
                           <tr>
-                            <th>Product</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Subtotal</th>
+                            <th>{t('ordersList.details.table.product')}</th>
+                            <th>{t('ordersList.details.table.qty')}</th>
+                            <th>{t('ordersList.details.table.price')}</th>
+                            <th>{t('ordersList.details.table.subtotal')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -401,7 +405,7 @@ const PedidosList = () => {
                         </tbody>
                         <tfoot>
                           <tr>
-                            <td colSpan="3" className="fw-bold">Total:</td>
+                            <td colSpan="3" className="fw-bold">{t('ordersList.details.total')}</td>
                             <td className="fw-bold text-success">
                               {formatCurrency(orderDetails.reduce((sum, d) => sum + (parseFloat(d.subtotal) || 0), 0))}
                             </td>
@@ -412,7 +416,7 @@ const PedidosList = () => {
                   </div>
                 ) : (
                   <div className="text-center text-muted">
-                    No details found for this order
+                    {t('ordersList.details.no_details')}
                   </div>
                 )}
               </div>
@@ -427,13 +431,13 @@ const PedidosList = () => {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header bg-warning text-dark">
-                <h5 className="modal-title">🔄 Change Order Status</h5>
+                <h5 className="modal-title">🔄 {t('ordersList.status_modal.title')}</h5>
                 <button type="button" className="btn-close" onClick={closeStatusModal}></button>
               </div>
               <div className="modal-body">
-                <p>Order <strong>#{orderToChange.id_pedido}</strong> - {orderToChange.cliente_nombre}</p>
+                <p>{t('ordersList.status_modal.order')} <strong>#{orderToChange.id_pedido}</strong> - {orderToChange.cliente_nombre}</p>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold">New Status:</label>
+                  <label className="form-label fw-semibold">{t('ordersList.status_modal.new_status')}</label>
                   <select
                     className="form-select"
                     value={newStatus}
@@ -446,8 +450,8 @@ const PedidosList = () => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={closeStatusModal}>Cancel</button>
-                <button className="btn btn-warning" onClick={handleUpdateStatus}>✅ Update Status</button>
+                <button className="btn btn-secondary" onClick={closeStatusModal}>{t('common.cancel')}</button>
+                <button className="btn btn-warning" onClick={handleUpdateStatus}>✅ {t('ordersList.status_modal.update_button')}</button>
               </div>
             </div>
           </div>
@@ -463,7 +467,7 @@ const PedidosList = () => {
             closeNewOrderModal();
             fetchInitialData();
           }}
-          titulo="➕ Create New Order"
+          titulo={`➕ ${t('ordersList.new_order_modal.title')}`}
         />
       )}
 
