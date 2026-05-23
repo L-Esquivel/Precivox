@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../services/storefrontAPI';
 import { Spinner, Button } from 'react-bootstrap';
-import AddSectionModal from './AddSectionModal'; // Import the new modal component
+import AddSectionModal from './AddSectionModal';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const StorefrontSettings = () => {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ const StorefrontSettings = () => {
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // Store the original sections order to revert on API error
   useEffect(() => {
     const fetchSections = async () => {
       try {
@@ -65,6 +67,30 @@ const StorefrontSettings = () => {
       }
     }
   };
+
+  const onDragEnd = async (result) => {
+    const { destination, source } = result;
+
+    if (!destination || destination.index === source.index) {
+      return;
+    }
+
+    const originalSections = [...sections];
+    const reorderedSections = Array.from(sections);
+    const [removed] = reorderedSections.splice(source.index, 1);
+    reorderedSections.splice(destination.index, 0, removed);
+
+    // Update UI immediately for a snappy feel
+    setSections(reorderedSections);
+
+    try {
+      const orderedIds = reorderedSections.map(s => s.id);
+      await storefrontAPI.reorderSections(orderedIds);
+    } catch (err) {
+      setError(t('storefront.errors.reorder_section', 'Failed to save the new order. Reverting changes.'));
+      setSections(originalSections); // Revert to original order on error
+    }
+  };
   const renderContent = () => {
     if (loading) {
       return <div className="text-center p-5"><Spinner animation="border" /></div>;
@@ -83,23 +109,36 @@ const StorefrontSettings = () => {
     }
 
     return (
-      <ul className="list-group mt-3">
-        {sections.map(section => (
-          <li key={section.id} className="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <h5 className="mb-1 text-capitalize">{section.section_type.replace('_', ' ')}</h5>
-            </div>
-            <div>
-              <span className={`badge me-3 bg-${section.is_visible ? 'success' : 'secondary'}`}>
-                {section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}
-              </span>
-              <Button variant="outline-danger" size="sm" onClick={() => handleDeleteSection(section.id)}>
-                {t('common.delete', 'Delete')}
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="sections-list">
+          {(provided) => (
+            <ul className="list-group mt-3" {...provided.droppableProps} ref={provided.innerRef}>
+              {sections.map((section, index) => (
+                <Draggable key={section.id} draggableId={String(section.id)} index={index}>
+                  {(provided) => (
+                    <li
+                      className="list-group-item d-flex justify-content-between align-items-center"
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                    >
+                      <div className="d-flex align-items-center">
+                        <span className="me-3 text-muted">☰</span>
+                        <h5 className="mb-0 text-capitalize">{section.section_type.replace('_', ' ')}</h5>
+                      </div>
+                      <div>
+                        <span className={`badge me-3 bg-${section.is_visible ? 'success' : 'secondary'}`}>{section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}</span>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteSection(section.id)}>{t('common.delete', 'Delete')}</Button>
+                      </div>
+                    </li>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </ul>
+          )}
+        </Droppable>
+      </DragDropContext>
     );
   };
 

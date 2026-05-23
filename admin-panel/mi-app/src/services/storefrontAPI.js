@@ -16,4 +16,8 @@ export const storefrontAPI = {
     const response = await api.delete(`/api/tenant/storefront/sections/${sectionId}`);
     return response.data;
   },
+  reorderSections: async (orderedIds) => {
+    const response = await api.put('/api/tenant/storefront/sections/reorder', { ordered_ids: orderedIds });
+    return response.data;
+  },
 };

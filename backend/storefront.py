@@ -146,3 +146,42 @@ def delete_storefront_section(section_id):
         conn.rollback()
         current_app.logger.error(f"Error deleting storefront section {section_id} for tenant {tenant_id}: {e}")
         return jsonify({"error": "An internal error occurred while deleting the section."}), 500
+
+@storefront_bp.route("/sections/reorder", methods=["PUT"])
+@admin_required
+def reorder_storefront_sections():
+    """
+    Updates the display_order of sections based on a provided list of IDs.
+    """
+    data = request.get_json()
+    ordered_ids = data.get("ordered_ids")
+    if not ordered_ids or not isinstance(ordered_ids, list):
+        return jsonify({"error": "ordered_ids must be a list of section IDs"}), 400
+
+    tenant_id = current_user.tenant_id
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            # Use a CASE statement for an efficient bulk update in a single query.
+            # This is much faster than running an UPDATE for each section.
+            case_sql = "CASE id "
+            for index, section_id in enumerate(ordered_ids):
+                case_sql += f"WHEN {int(section_id)} THEN {index} "
+            case_sql += "END"
+
+            # The WHERE clause ensures a tenant can only reorder their own sections.
+            cursor.execute(
+                f"""
+                UPDATE storefront_sections
+                SET display_order = {case_sql}
+                WHERE id = ANY(%s) AND tenant_id = %s
+                """,
+                (ordered_ids, tenant_id)
+            )
+            conn.commit()
+
+        return jsonify({"message": "Sections reordered successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Error reordering storefront sections for tenant {tenant_id}: {e}")
+        return jsonify({"error": "An internal error occurred while reordering sections."}), 500

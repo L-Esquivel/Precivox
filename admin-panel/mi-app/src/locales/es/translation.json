@@ -387,5 +387,6 @@
   "storefront.section_types.featured_products": "Productos Destacados",
   "storefront.section_types.gallery": "Galería de Imágenes",
   "storefront.section_types.about_us": "Sobre Nosotros",
-  "storefront.section_types.contact_form": "Formulario de Contacto"
+  "storefront.section_types.contact_form": "Formulario de Contacto",
+  "storefront.errors.reorder_section": "Error al guardar el nuevo orden. Revirtiendo cambios."
 }
