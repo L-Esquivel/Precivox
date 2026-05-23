@@ -379,5 +379,13 @@
   "storefront.errors.add_section": "Error al añadir la nueva sección.",
   "storefront.settings.delete_confirm": "¿Estás seguro de que quieres eliminar esta sección? Esta acción no se puede deshacer.",
   "storefront.errors.delete_section": "Error al eliminar la sección.",
-  "storefront.errors.db_not_ready": "Esta función no está disponible todavía. La base de datos necesita una actualización. Contacta a soporte."
+  "storefront.errors.db_not_ready": "Esta función no está disponible todavía. La base de datos necesita una actualización. Contacta a soporte.",
+  "storefront.modal.add_title": "Añadir Nueva Sección",
+  "storefront.modal.section_type_label": "Selecciona un tipo de sección",
+  "storefront.modal.add_button": "Añadir Sección",
+  "storefront.section_types.hero": "Banner de Bienvenida (Hero)",
+  "storefront.section_types.featured_products": "Productos Destacados",
+  "storefront.section_types.gallery": "Galería de Imágenes",
+  "storefront.section_types.about_us": "Sobre Nosotros",
+  "storefront.section_types.contact_form": "Formulario de Contacto"
 }

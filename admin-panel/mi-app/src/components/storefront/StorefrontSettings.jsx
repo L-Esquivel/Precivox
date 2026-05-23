@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../services/storefrontAPI';
-import { Spinner, Button } from 'react-bootstrap'; // Asumiendo que usas react-bootstrap
+import { Spinner, Button } from 'react-bootstrap';
+import AddSectionModal from './AddSectionModal'; // Import the new modal component
 
 const StorefrontSettings = () => {
   const { t } = useTranslation();
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -18,11 +20,10 @@ const StorefrontSettings = () => {
         setError(null);
       } catch (err) {
         const apiErrorMsg = err.response?.data?.error;
-        if (apiErrorMsg === 'Feature not available: Database is not up to date.') {
-          setError(t('storefront.errors.db_not_ready'));
-        } else {
-          setError(t('storefront.errors.load_sections', 'Failed to load storefront sections.'));
-        }
+        const apiError = apiErrorMsg === 'Feature not available: Database is not up to date.'
+          ? t('storefront.errors.db_not_ready')
+          : apiErrorMsg || t('storefront.errors.load_sections', 'Failed to load storefront sections.');
+        setError(apiError);
         console.error(err);
       } finally {
         setLoading(false);
@@ -32,22 +33,17 @@ const StorefrontSettings = () => {
     fetchSections();
   }, [t]); // t is a stable function, but it's good practice to include it.
 
-  const handleAddSection = async () => {
-    // For now, we'll add a 'hero' section by default.
-    // In the future, this could open a modal to let the user choose the section type.
+  const handleCreateSection = async (sectionType) => {
     try {
-      // We can add a loading state for the button here in the future
-      const newSection = await storefrontAPI.createSection({ section_type: 'hero' });
+      const newSection = await storefrontAPI.createSection({ section_type: sectionType });
       // Add the new section to the local state to update the UI instantly
       setSections(prevSections => [...prevSections, newSection]);
+      setShowAddModal(false); // Close modal on success
     } catch (err) {
       const apiErrorMsg = err.response?.data?.error;
-      let apiError;
-      if (apiErrorMsg === 'Feature not available: Database is not up to date.') {
-        apiError = t('storefront.errors.db_not_ready');
-      } else {
-        apiError = apiErrorMsg || t('storefront.errors.add_section', 'Failed to add the new section.');
-      }
+      const apiError = apiErrorMsg === 'Feature not available: Database is not up to date.'
+        ? t('storefront.errors.db_not_ready')
+        : apiErrorMsg || t('storefront.errors.add_section', 'Failed to add the new section.');
       setError(apiError);
       console.error("Failed to add section", err);
     }
@@ -61,12 +57,9 @@ const StorefrontSettings = () => {
         setSections(prevSections => prevSections.filter(section => section.id !== sectionId));
       } catch (err) {
         const apiErrorMsg = err.response?.data?.error;
-        let apiError;
-        if (apiErrorMsg === 'Feature not available: Database is not up to date.') {
-          apiError = t('storefront.errors.db_not_ready');
-        } else {
-          apiError = apiErrorMsg || t('storefront.errors.delete_section', 'Failed to delete the section.');
-        }
+        const apiError = apiErrorMsg === 'Feature not available: Database is not up to date.'
+          ? t('storefront.errors.db_not_ready')
+          : apiErrorMsg || t('storefront.errors.delete_section', 'Failed to delete the section.');
         setError(apiError);
         console.error("Failed to delete section", err);
       }
@@ -115,7 +108,7 @@ const StorefrontSettings = () => {
       <div className="card shadow-sm">
         <div className="card-header d-flex justify-content-between align-items-center">
           <h3 className="mb-0">{t('storefront.settings.title', 'Storefront Settings')}</h3>
-          <button className="btn btn-primary btn-sm" onClick={handleAddSection}>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
             {t('storefront.settings.addSection', 'Add Section')}
           </button>
         </div>
@@ -124,6 +117,12 @@ const StorefrontSettings = () => {
           {renderContent()}
         </div>
       </div>
+
+      <AddSectionModal
+        show={showAddModal}
+        onHide={() => setShowAddModal(false)}
+        onConfirm={handleCreateSection}
+      />
     </div>
   );
 };
