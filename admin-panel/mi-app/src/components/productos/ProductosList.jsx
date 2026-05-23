@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { productosService } from '../../services/productosService';
 import ProductoForm from './ProductoForm';
+import { formatCurrency } from '../../utils/formatters';
 import './ProductosList.css';
 
 const ProductosList = () => {
   const [products, setProducts] = useState([]);
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -33,7 +36,7 @@ const ProductosList = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm(t('productsList.delete_confirm'))) {
       try {
         await productosService.deleteProduct(id);
         await loadProducts();
@@ -53,11 +56,9 @@ const ProductosList = () => {
     } catch (error) { console.error(error); }
   };
 
-  const formatPrice = (p) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(p || 0);
-
   const renderStockBadge = (producto) => {
     if (!producto.controla_stock) {
-      return <span className="badge bg-light text-muted border">N/A</span>;
+      return <span className="badge bg-light text-muted border">{t('productsList.stock.not_applicable')}</span>;
     }
     
     let color = "bg-primary";
@@ -66,19 +67,19 @@ const ProductosList = () => {
 
     return (
       <span className={`badge ${color} px-3`}>
-        {producto.stock} units
+        {t('productsList.stock.units', { count: producto.stock })}
       </span>
     );
   };
 
-  if (loading) return <div className="text-center p-5"><h4>Loading catalog...</h4></div>;
+  if (loading) return <div className="text-center p-5"><h4>{t('productsList.loading')}</h4></div>;
 
   return (
     <div className="productos-container">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">🎂 Product & Inventory Management</h2>
+        <h2 className="mb-0">🎂 {t('productsList.title')}</h2>
         <button className="btn btn-primary shadow-sm" onClick={handleCreate}>
-          ➕ New Product
+          ➕ {t('productsList.add_product')}
         </button>
       </div>
 
@@ -86,18 +87,18 @@ const ProductosList = () => {
         <table className="table table-hover table-bordered mb-0 bg-white">
           <thead className="table-dark text-center">
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Current Stock</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>{t('productsList.table.id')}</th>
+              <th>{t('productsList.table.name')}</th>
+              <th>{t('productsList.table.category')}</th>
+              <th>{t('productsList.table.price')}</th>
+              <th>{t('productsList.table.stock')}</th>
+              <th>{t('productsList.table.status')}</th>
+              <th>{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody className="align-middle">
             {products.length === 0 ? (
-              <tr><td colSpan="7" className="text-center py-4">No products yet</td></tr>
+              <tr><td colSpan="7" className="text-center py-4">{t('productsList.no_products')}</td></tr>
             ) : (
               products.map(producto => (
                 <tr key={producto.id_producto}>
@@ -108,14 +109,14 @@ const ProductosList = () => {
                         {producto.categoria}
                     </span>
                   </td>
-                  <td className="fw-bold text-success text-end">{formatPrice(producto.precio)}</td>
+                  <td className="fw-bold text-success text-end">{formatCurrency(producto.precio, i18n)}</td>
                   <td className="text-center">
                     {renderStockBadge(producto)}
                   </td>
                   <td className="text-center">
                     {producto.controla_stock ? 
-                        <span className="text-primary small">📦 Inventory Active</span> : 
-                        <span className="text-muted small">✨ On-Demand</span>
+                        <span className="text-primary small">📦 {t('productsList.status.active')}</span> : 
+                        <span className="text-muted small">✨ {t('productsList.status.on_demand')}</span>
                     }
                   </td>
                   <td className="text-center">
