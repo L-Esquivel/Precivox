@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './App.css';
 import { useAuth } from './context/AuthContext';
 import UsuariosList from './components/usuarios/UsuariosList';
@@ -12,9 +13,11 @@ import Dashboard from './components/dashboard/Dashboard';
 import GastosList from './components/gastos/GastosList';
 import MermaList from './components/merma/MermaList';
 import TenantsList from './components/tenants/TenantsList';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import SupportModal from './components/support/SupportModal';
 
 function App() {
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState('inicio');
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -35,7 +38,7 @@ function App() {
   };
 
   if (loading) {
-    return <div className="loading">Verifying session...</div>;
+    return <div className="loading">{t('verifyingSession')}</div>;
   }
 
   if (!isAuthenticated) {
@@ -55,7 +58,8 @@ function App() {
                 <span className="navbar-text text-white">
                   {user.nombre} <small className="d-block text-warning text-end">{user.rol?.toUpperCase()}</small>
                 </span>
-                <button className="btn btn-outline-light btn-sm" onClick={logout}>🚪 Logout</button>
+                <LanguageSwitcher />
+                <button className="btn btn-outline-light btn-sm" onClick={logout}>🚪 {t('logout')}</button>
               </div>
             )}
           </div>
@@ -66,13 +70,13 @@ function App() {
         <nav className="sidebar">
           <ul className="nav nav-pills flex-column p-3">
             <li className="nav-item">
-              <button className={`nav-link w-100 text-start ${activeSection === 'inicio' ? 'active' : ''}`} onClick={() => setActiveSection('inicio')}>📊 Home / Dashboard</button>
+              <button className={`nav-link w-100 text-start ${activeSection === 'inicio' ? 'active' : ''}`} onClick={() => setActiveSection('inicio')}>📊 {t('homeDashboard')}</button>
             </li>
 
             {/* Button visible only for Super Admin */}
             {user?.rol === 'superadmin' && (
               <li className="nav-item">
-                <button className={`nav-link w-100 text-start ${activeSection === 'tenants' ? 'active' : ''}`} onClick={() => setActiveSection('tenants')}>🏢 Tenants</button>
+                <button className={`nav-link w-100 text-start ${activeSection === 'tenants' ? 'active' : ''}`} onClick={() => setActiveSection('tenants')}>🏢 {t('tenants')}</button>
               </li>
             )}
             
@@ -92,7 +96,7 @@ function App() {
                 ))}
                 <hr className="text-white-50" />
                 <li className="nav-item">
-                  <button className="nav-link w-100 text-start" onClick={() => setShowSupportModal(true)}>❓ Support</button>
+                  <button className="nav-link w-100 text-start" onClick={() => setShowSupportModal(true)}>❓ {t('support')}</button>
                 </li>
               </>
             )}
