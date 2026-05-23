@@ -142,8 +142,8 @@ def get_orders():
     cursor = conn.cursor(cursor_factory=DictCursor)
     try:
         cursor.execute("""
-            SELECT p.*, u.nombre as customer_name, u.telefono as customer_phone 
-            FROM pedidos p LEFT JOIN usuarios u ON p.usuario_id = u.id_usuario 
+            SELECT p.*, u.nombre as cliente_nombre, u.telefono as cliente_telefono 
+            FROM pedidos p LEFT JOIN usuarios u ON p.usuario_id = u.id_usuario
             WHERE p.tenant_id = %s
             ORDER BY p.fecha_pedido DESC
         """, (tenant_id,))

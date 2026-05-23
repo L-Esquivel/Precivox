@@ -107,8 +107,6 @@ const PedidoForm = ({ productos, onSubmit, onClose, titulo }) => {
 
     try {
       await onSubmit(orderData);
-      const event = new CustomEvent('orderCreated');
-      window.dispatchEvent(event);
     } catch (error) {
       console.error("Submission failed:", error);
     } finally {
