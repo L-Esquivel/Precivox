@@ -1,12 +1,11 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 const Sidebar = ({ onShowSupport }) => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const location = useLocation();
 
   // This is the original logic from your App.jsx, which is crucial.
   const labelToTKey = {
@@ -21,7 +20,7 @@ const Sidebar = ({ onShowSupport }) => {
 
   // This function now returns the Bootstrap classes that your original design used.
   // NavLink will automatically add the 'active' class, which Bootstrap styles correctly.
-  const getNavLinkClass = ({ isActive }) => `nav-link w-100 text-start text-white ${isActive ? 'active' : ''}`;
+  const getNavLinkClass = ({ isActive }) => `nav-link w-100 text-start ${isActive ? 'active' : ''}`;
 
   return (
     <nav className="sidebar">
@@ -58,7 +57,7 @@ const Sidebar = ({ onShowSupport }) => {
             <hr className="text-white-50" />
             <li className="nav-item">
               {/* This remains a button as it triggers a modal, not a route change */}
-              <button className="nav-link w-100 text-start text-white" onClick={onShowSupport}>
+              <button className="nav-link w-100 text-start" onClick={onShowSupport}>
                 ❓ {t('support')}
               </button>
             </li>
