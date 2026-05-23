@@ -3,7 +3,6 @@ from flask_login import current_user
 from utils import admin_required
 from db import get_db
 from psycopg2.extras import DictCursor
-from psycopg2 import errors
 from psycopg2 import errors, sql
 import datetime
 
@@ -166,21 +165,12 @@ def reorder_storefront_sections():
     conn = get_db()
     try:
         with conn.cursor() as cursor:
-            # Use a CASE statement for an efficient bulk update in a single query.
-            # This is much faster than running an UPDATE for each section.
-            case_sql = "CASE id "
-            for index, section_id in enumerate(ordered_ids):
-                case_sql += f"WHEN {int(section_id)} THEN {index} "
-            case_sql += "END"
             # Validate that all IDs are integers to prevent injection.
             try:
                 sanitized_ids = [int(sid) for sid in ordered_ids]
             except (ValueError, TypeError):
                 return jsonify({"error": "All IDs in ordered_ids must be integers"}), 400
 
-            # The WHERE clause ensures a tenant can only reorder their own sections.
-            cursor.execute(
-                f"""
             # Build the CASE statement safely using psycopg2.sql to prevent SQL injection.
             when_clauses = []
             for index, section_id in enumerate(sanitized_ids):
@@ -196,12 +186,8 @@ def reorder_storefront_sections():
             # Build the final, safe query.
             query = sql.SQL("""
                 UPDATE storefront_sections
-                SET display_order = {case_sql}
                 SET display_order = {case_expr}
                 WHERE id = ANY(%s) AND tenant_id = %s
-                """,
-                (ordered_ids, tenant_id)
-            )
             """).format(case_expr=case_expression)
 
             cursor.execute(query, (sanitized_ids, tenant_id))
