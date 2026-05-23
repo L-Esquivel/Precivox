@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usuariosService } from '../../services/usuariosService';
-import { formatCurrency } from '/src/utils/formatters';
+import { formatCurrency } from '../../utils/formatters';
 
 const PedidoForm = ({ productos, onSubmit, onClose, titulo }) => {
   const { t, i18n } = useTranslation();

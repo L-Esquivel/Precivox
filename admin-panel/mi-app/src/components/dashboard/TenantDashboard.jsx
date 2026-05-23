@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pedidosService } from '../../services/pedidosService';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { formatCurrency } from '/src/utils/formatters';
+import { formatCurrency } from '../../utils/formatters';
 import './TenantDashboard.css';
 
 const TenantDashboard = ({ user }) => {

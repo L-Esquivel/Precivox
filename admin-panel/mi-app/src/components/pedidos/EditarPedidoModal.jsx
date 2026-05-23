@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pedidosService } from '../../services/pedidosService';
-import { formatCurrency } from '/src/utils/formatters';
+import { formatCurrency } from '../../utils/formatters';
 
 const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
   const { t, i18n } = useTranslation();

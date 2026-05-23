@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { productosService } from '../../services/productosService';
 import ProductoForm from './ProductoForm';
-// Use absolute path from src to avoid relative path issues during build.
-import { formatCurrency } from '/src/utils/formatters';
+// Use relative path to ensure build system can resolve it.
+import { formatCurrency } from '../../utils/formatters';
 import './ProductosList.css';
 
 const ProductosList = () => {
