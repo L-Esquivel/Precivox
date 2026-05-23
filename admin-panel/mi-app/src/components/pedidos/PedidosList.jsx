@@ -199,7 +199,7 @@ const PedidosList = () => {
             <div class="info-section">
               <h3>📋 ${t('ordersList.receipt.order_info')}</h3>
               <div class="info-row"><span>${t('ordersList.table.date')}:</span><span>${new Date(order.fecha_pedido).toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'en-US')}</span></div>
-              <div class="info-row"><span>${t('ordersList.table.status')}:</span><span>${order.estado}</span></div>
+              <div class="info-row"><span>${t('ordersList.table.status')}:</span><span>${t(`ordersList.status.${order.estado}`, order.estado)}</span></div>
             </div>
             <div class="info-section">
               <h3>👤 ${t('ordersList.receipt.customer_info')}</h3>
