@@ -62,7 +62,7 @@ The platform recently underwent a comprehensive engineering sprint to ensure the
 
 ### 1. Backend Setup
 
-1.  Navigate to the backend directory:
+1.  Navigate to the `backend` directory:
     ```bash
     cd backend
     ```
@@ -92,7 +92,7 @@ The platform recently underwent a comprehensive engineering sprint to ensure the
 
 ### 2. Frontend Setup
 
-1.  Navigate to the frontend directory:
+1.  Navigate to the admin panel directory:
     ```bash
     cd admin-panel/mi-app
     ```
@@ -105,6 +105,21 @@ The platform recently underwent a comprehensive engineering sprint to ensure the
     VITE_API_URL=http://127.0.0.1:5000
     ```
 
+### 3. Storefront Setup (Landing Page)
+
+1. Navigate to the storefront directory:
+   ```bash
+   cd landing-page
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file and point it to your running backend:
+   ```
+   VITE_API_URL=http://127.0.0.1:5000
+   ```
+
 ## 🚀 Running the Application
 
 1.  **Start the Backend Server**:
@@ -115,17 +130,28 @@ The platform recently underwent a comprehensive engineering sprint to ensure the
     The API will be available at `http://127.0.0.1:5000`.
 
 2.  **Start the Frontend Development Server**:
-    In a new terminal, navigate to the `admin-panel/mi-app` directory and run:
+    In a new terminal, navigate to `admin-panel/mi-app` and run:
     ```bash
     npm run dev
     ```
     The admin panel will be accessible at `http://localhost:5173`.
 
+3.  **Start the Storefront Development Server**:
+    In another terminal, navigate to `landing-page` and run:
+    ```bash
+    npm run dev
+    ```
+    The storefront will be accessible at `http://localhost:5174` (or the next available port).
+
 ## 🗺️ Development Roadmap
-- **Multi-Tenant Landing Pages**: Dynamic, customizable public-facing pages for individual tenants.
-- **Internationalization**: Full codebase and UI migration to English standards.
-- **Security Audit**: End-to-end forensic audit of data isolation and RBAC.
-- **Dockerization**: Full containerization for scalable deployment on environments like Render.
+- **[In Progress] Multi-Tenant Storefronts**: Building the dynamic, customizable public-facing pages for individual tenants.
+  - ✅ Backend API for customization is complete.
+  - ✅ Admin panel UI for tenants to manage their store is complete.
+  - ⏳ Building the public-facing React application.
+- **[Complete] Admin Panel Internationalization**: The entire admin panel is now fully bilingual (English/Spanish) using `i18next`.
+- **[Complete] Codebase Refactoring**: Completed a full refactoring of the backend and frontend to fix bugs, improve data consistency, and enhance security.
+- **[Next] Security Audit**: End-to-end forensic audit of data isolation and RBAC.
+- **[Next] Dockerization**: Full containerization for scalable deployment.
 
 ```
 ├── admin-panel/        # React frontend application
@@ -134,4 +160,3 @@ The platform recently underwent a comprehensive engineering sprint to ensure the
 ├── landing-page/       # Public-facing static website
 └── README.md           # You are here
 ```
-
