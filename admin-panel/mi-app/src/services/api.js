@@ -1,63 +1,26 @@
-// src/services/api.js
-// 🚀 Backend URL for production
-const API_BASE = import.meta.env.VITE_API_URL || 'https://precivox-backend.onrender.com';
+import axios from 'axios';
 
-// Basic function to make requests to the backend
-const fetchAPI = async (endpoint, options = {}) => {
-  // Ensure a trailing slash if it doesn't have one (prevents redirects to HTTP)
-  if (endpoint && !endpoint.endsWith('/')) {
-    endpoint = endpoint + '/';
-  }
+// Use environment variables for the API URL with a fallback for local development
+const API_URL = import.meta.env.VITE_API_URL || 'https://precivox-backend.onrender.com';
 
-  const config = {
-    credentials: 'include', // important for session cookies
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    redirect: 'follow',     // sigue redirects automáticamente
-    ...options,
-  };
-
-  if (options.body) {
-    config.body = JSON.stringify(options.body);
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}${endpoint}`, config);
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'Request Error');
-    }
-    
-    return data;
-  } catch (error) {
-    throw new Error(error.message || 'Connection Error');
-  }
-};
+// Create and EXPORT the axios instance so it can be reused by other services
+export const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // Important for sending cookies with session info
+});
 
 // Authentication endpoints, used by AuthContext
 export const authAPI = {
-  login: (email, password) => 
-    fetchAPI('/auth/login', {
-      method: 'POST',
-      body: { email, password }
-    }),
+  login: (email, password) => api.post('/auth/login', { email, password }),
   
   // This is for the public customer registration
-  register: (userData) =>
-    fetchAPI('/auth/public/register', {
-      method: 'POST',
-      body: userData
-    }),
+  register: (userData) => api.post('/auth/public/register', userData),
 
-  logout: () => 
-    fetchAPI('/auth/logout', {
-      method: 'POST'
-    }),
+  logout: () => api.post('/auth/logout'),
 
   // Gets the current user from the server session
-  me: () => fetchAPI('/auth/me')
+  me: () => api.get('/auth/me')
 };
 
-export default fetchAPI;
+// The default export of fetchAPI is removed.
+// The new standard is to import the 'api' instance and use it directly in service files.
