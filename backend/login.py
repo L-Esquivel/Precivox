@@ -260,6 +260,7 @@ def registro_cliente():
 # SESIÓN Y ESTADO
 # =========================
 
+@auth_bp.route("/logout/", methods=["POST"]) # Handle trailing slash
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
@@ -267,6 +268,7 @@ def logout():
     logout_user()
     return jsonify({"message": "Session closed"})
 
+@auth_bp.route("/me/", methods=["GET"]) # Handle trailing slash to prevent redirects that drop session cookies
 @auth_bp.route("/me", methods=["GET"])
 @login_required
 def get_current_user():
