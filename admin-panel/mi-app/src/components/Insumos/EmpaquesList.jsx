@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { empaquesService } from '../../services/empaquesService';
+import { formatCurrency } from '../../utils/formatters';
 
 const EmpaquesList = () => {
   const [packagingItems, setPackagingItems] = useState([]);
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +29,7 @@ const EmpaquesList = () => {
       setPackagingItems(data);
     } catch (err) {
       console.error('Error:', err);
-      setError('Could not load packaging catalog');
+      setError(t('packagingList.error_load'));
     } finally {
       setLoading(false);
     }
@@ -69,7 +72,7 @@ const EmpaquesList = () => {
       };
 
       if (!payload.nombre) {
-        setError('Packaging Name is required.');
+        setError(t('packagingList.form.name_required'));
         return;
       }
 
@@ -83,38 +86,30 @@ const EmpaquesList = () => {
       fetchPackaging();
     } catch (err) {
       console.error('Error saving:', err);
-      setError(err.message || 'Error saving item');
+      setError(err.message || t('packagingList.error_save'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this packaging item from the general catalog?')) {
+    if (window.confirm(t('packagingList.delete_confirm'))) {
       try {
         await empaquesService.deletePackagingFromCatalog(id);
         fetchPackaging();
       } catch (err) {
         console.error('Error deleting packaging:', err);
-        setError(err.message || 'Could not delete the packaging item');
+        setError(err.message || t('packagingList.error_delete'));
       }
     }
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
-
-  if (loading) return <div className="text-center p-5"><h5>Loading packaging items...</h5></div>;
+  if (loading) return <div className="text-center p-5"><h5>{t('packagingList.loading')}</h5></div>;
 
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">🛍️ Packaging Catalog</h2>
+        <h2 className="mb-0">🛍️ {t('packagingList.title')}</h2>
         <button className="btn btn-primary" onClick={openCreateModal}>
-          ➕ New Packaging Item
+          ➕ {t('packagingList.add_item')}
         </button>
       </div>
 
@@ -126,29 +121,29 @@ const EmpaquesList = () => {
             <table className="table table-striped table-hover mb-0">
               <thead className="table-dark">
                 <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Base Price</th>
-                  <th className="text-center">Actions</th>
+                  <th>{t('packagingList.table.name')}</th>
+                  <th>{t('packagingList.table.description')}</th>
+                  <th>{t('packagingList.table.price')}</th>
+                  <th className="text-center">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {packagingItems.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="text-center py-4 text-muted">No packaging items in the catalog yet</td>
+                    <td colSpan="4" className="text-center py-4 text-muted">{t('packagingList.no_items')}</td>
                   </tr>
                 ) : (
                   packagingItems.map(e => (
                     <tr key={e.id_empaque}>
                       <td className="fw-semibold">{e.nombre}</td>
-                      <td>{e.descripcion || <span className="text-muted">No description</span>}</td>
+                      <td>{e.descripcion || <span className="text-muted">{t('common.no_description')}</span>}</td>
                       <td className="fw-bold text-success">
-                        {formatCurrency(e.precio)}
+                        {formatCurrency(e.precio, i18n)}
                       </td>
                       <td className="text-center">
                         <div className="btn-group" role="group">
-                          <button className="btn btn-warning btn-sm me-1" onClick={() => openEditModal(e)}>✏️ Edit</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(e.id_empaque)}>🗑️ Delete</button>
+                          <button className="btn btn-warning btn-sm me-1" onClick={() => openEditModal(e)}>✏️ {t('common.edit')}</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(e.id_empaque)}>🗑️ {t('common.delete')}</button>
                         </div>
                       </td>
                     </tr>
@@ -168,7 +163,7 @@ const EmpaquesList = () => {
               
               <div className="modal-header bg-primary text-white">
                 <h5 className="modal-title fw-bold">
-                  {editingItem ? '✏️ Edit Packaging Item' : '➕ New Packaging Item'}
+                  {editingItem ? `✏️ ${t('packagingList.form.edit_title')}` : `➕ ${t('packagingList.form.add_title')}`}
                 </h5>
                 <button type="button" className="btn-close btn-close-white" onClick={closeModal}></button>
               </div>
@@ -176,12 +171,12 @@ const EmpaquesList = () => {
               <form onSubmit={handleSubmit}>
                 <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label fw-bold">Packaging Name *</label>
+                    <label className="form-label fw-bold">{t('packagingList.form.name_label')}</label>
                     <input
                       type="text"
                       name="nombre"
                       className="form-control"
-                      placeholder="e.g., Cake Box 10x10"
+                      placeholder={t('packagingList.form.name_placeholder')}
                       value={formData.nombre}
                       onChange={handleInputChange}
                       required
@@ -189,19 +184,19 @@ const EmpaquesList = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label fw-bold">Description</label>
+                    <label className="form-label fw-bold">{t('packagingList.form.description_label')}</label>
                     <input
                       type="text"
                       name="descripcion"
                       className="form-control"
-                      placeholder="e.g., Sturdy material"
+                      placeholder={t('packagingList.form.description_placeholder')}
                       value={formData.descripcion}
                       onChange={handleInputChange}
                     />
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label fw-bold">Unit Price *</label>
+                    <label className="form-label fw-bold">{t('packagingList.form.price_label')}</label>
                     <div className="input-group">
                       <span className="input-group-text">$</span>
                       <input
@@ -220,10 +215,10 @@ const EmpaquesList = () => {
 
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={closeModal}>
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    {editingItem ? '📝 Update' : '✅ Create'}
+                    {editingItem ? `📝 ${t('packagingList.form.update_button')}` : `✅ ${t('packagingList.form.create_button')}`}
                   </button>
                 </div>
               </form>

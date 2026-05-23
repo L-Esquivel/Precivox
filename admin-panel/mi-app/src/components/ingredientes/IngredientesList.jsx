@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './IngredientesList.css';
 import { ingredientesService } from '../../services/ingredientesService';
+import { formatCurrency } from '../../utils/formatters';
 
 const IngredientesList = () => {
   const [ingredients, setIngredients] = useState([]);
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -30,7 +33,7 @@ const IngredientesList = () => {
       setIngredients(data);
     } catch (error) {
       console.error('Error loading ingredients:', error);
-      setError('Could not load ingredients');
+      setError(t('ingredientsList.error_load'));
     } finally {
       setLoading(false);
     }
@@ -87,7 +90,7 @@ const IngredientesList = () => {
       };
 
       if (!payload.nombre || !payload.unidad_medida) {
-        setError('Name and Unit are required');
+        setError(t('ingredientsList.error_required'));
         return;
       }
 
@@ -101,28 +104,20 @@ const IngredientesList = () => {
       await fetchIngredients(); // Reload the list
     } catch (error) {
       console.error('Error saving ingredient:', error);
-      setError(error.message || 'Could not save the ingredient');
+      setError(error.message || t('ingredientsList.error_save'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this ingredient?')) {
+    if (window.confirm(t('ingredientsList.delete_confirm'))) {
       try {
         await ingredientesService.deleteIngredient(id);
         fetchIngredients();
       } catch (error) {
         console.error('Error deleting ingredient:', error);
-        setError(error.message || 'Could not delete the ingredient');
+        setError(error.message || t('ingredientsList.error_delete'));
       }
     }
-  };
-
-  const formatCurrency = (value) => {
-    if (!value) return '$0';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
   };
 
   const getUnitBadgeClass = (unit) => {
@@ -146,15 +141,15 @@ const IngredientesList = () => {
   };
 
   if (loading) {
-    return <div className="text-center p-4">Loading ingredients...</div>;
+    return <div className="text-center p-4">{t('ingredientsList.loading')}</div>;
   }
 
   return (
     <div className="ingredientes-container">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">🧂 Ingredients Management</h2>
+        <h2 className="mb-0">🧂 {t('ingredientsList.title')}</h2>
         <button className="btn btn-primary" onClick={openCreateModal}>
-          ➕ New Ingredient
+          ➕ {t('ingredientsList.add_item')}
         </button>
       </div>
 
@@ -170,18 +165,18 @@ const IngredientesList = () => {
             <table className="table table-striped table-hover mb-0">
               <thead className="table-dark">
                 <tr>
-                  <th>Name</th>
-                  <th>Unit</th>
-                  <th>Quantity in Stock</th>
-                  <th>Unit Cost</th>
-                  <th className="text-center">Actions</th>
+                  <th>{t('ingredientsList.table.name')}</th>
+                  <th>{t('ingredientsList.table.unit')}</th>
+                  <th>{t('ingredientsList.table.stock')}</th>
+                  <th>{t('ingredientsList.table.cost')}</th>
+                  <th className="text-center">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {ingredients.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="text-center text-muted py-4">
-                      No ingredients registered yet
+                      {t('ingredientsList.no_items')}
                     </td>
                   </tr>
                 ) : (
@@ -203,23 +198,23 @@ const IngredientesList = () => {
                         )}
                       </td>
                       <td className="fw-bold text-success">
-                        {formatCurrency(ingredient.costo_por_unidad)}
+                        {formatCurrency(ingredient.costo_por_unidad, i18n)}
                       </td>
                       <td className="text-center">
                         <div className="btn-group" role="group">
                           <button 
                             className="btn btn-warning btn-sm me-1"
                             onClick={() => openEditModal(ingredient)}
-                            title="Edit ingredient"
+                            title={t('common.edit')}
                           >
-                            ✏️ Edit
+                            ✏️ {t('common.edit')}
                           </button>
                           <button 
                             className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(ingredient.id_ingrediente)}
-                            title="Delete ingredient"
+                            title={t('common.delete')}
                           >
-                            🗑️ Delete
+                            🗑️ {t('common.delete')}
                           </button>
                         </div>
                       </td>
@@ -239,7 +234,7 @@ const IngredientesList = () => {
             <div className="modal-content">
               <div className="modal-header bg-primary text-white">
                 <h5 className="modal-title">
-                  {editingIngredient ? '✏️ Edit Ingredient' : '➕ New Ingredient'}
+                  {editingIngredient ? `✏️ ${t('ingredientsList.form.edit_title')}` : `➕ ${t('ingredientsList.form.add_title')}`}
                 </h5>
                 <button 
                   type="button" 
@@ -251,7 +246,7 @@ const IngredientesList = () => {
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label">Ingredient Name *</label>
+                    <label className="form-label">{t('ingredientsList.form.name_label')}</label>
                     <input
                       type="text"
                       name="nombre"
@@ -259,12 +254,12 @@ const IngredientesList = () => {
                       value={formData.nombre}
                       onChange={handleInputChange}
                       required
-                      placeholder="e.g., Flour, Sugar, Eggs..."
+                      placeholder={t('ingredientsList.form.name_placeholder')}
                     />
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Unit of Measurement *</label>
+                    <label className="form-label">{t('ingredientsList.form.unit_label')}</label>
                     <select
                       name="unidad_medida"
                       className="form-select"
@@ -272,7 +267,7 @@ const IngredientesList = () => {
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="">Select unit</option>
+                      <option value="">{t('ingredientsList.form.select_unit')}</option>
                       {units.map(unit => (
                         <option key={unit} value={unit}>
                           {unit}
@@ -284,7 +279,7 @@ const IngredientesList = () => {
                   <div className="row">
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label className="form-label">Quantity in Stock</label>
+                        <label className="form-label">{t('ingredientsList.form.stock_label')}</label>
                         <input
                           type="number"
                           name="stock"
@@ -300,7 +295,7 @@ const IngredientesList = () => {
 
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label className="form-label">Unit Cost</label>
+                        <label className="form-label">{t('ingredientsList.form.cost_label')}</label>
                         <input
                           type="number"
                           name="costo_por_unidad"
@@ -322,13 +317,13 @@ const IngredientesList = () => {
                     className="btn btn-secondary"
                     onClick={closeModal}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button 
                     type="submit"
                     className="btn btn-primary"
                   >
-                    {editingIngredient ? '📝 Update' : '✅ Create'} Ingredient
+                    {editingIngredient ? `📝 ${t('ingredientsList.form.update_button')}` : `✅ ${t('ingredientsList.form.create_button')}`}
                   </button>
                 </div>
               </form>
