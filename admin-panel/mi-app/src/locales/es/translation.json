@@ -376,5 +376,7 @@
   "storefront.settings.addSection": "Añadir Sección",
   "storefront.settings.noSections": "Aún no has configurado ninguna sección. ¡Empieza añadiendo una!",
   "storefront.errors.load_sections": "Ocurrió un error al cargar la configuración. Por favor, intenta de nuevo o contacta a soporte.",
-  "storefront.errors.add_section": "Error al añadir la nueva sección."
+  "storefront.errors.add_section": "Error al añadir la nueva sección.",
+  "storefront.settings.delete_confirm": "¿Estás seguro de que quieres eliminar esta sección? Esta acción no se puede deshacer.",
+  "storefront.errors.delete_section": "Error al eliminar la sección."
 }

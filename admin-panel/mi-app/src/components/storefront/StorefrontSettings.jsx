@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../services/storefrontAPI';
-import { Spinner } from 'react-bootstrap'; // Asumiendo que usas react-bootstrap para un spinner
+import { Spinner, Button } from 'react-bootstrap'; // Asumiendo que usas react-bootstrap
 
 const StorefrontSettings = () => {
   const { t } = useTranslation();
@@ -42,6 +42,20 @@ const StorefrontSettings = () => {
       console.error("Failed to add section", err);
     }
   };
+
+  const handleDeleteSection = async (sectionId) => {
+    if (window.confirm(t('storefront.settings.delete_confirm', 'Are you sure you want to delete this section? This cannot be undone.'))) {
+      try {
+        await storefrontAPI.deleteSection(sectionId);
+        // Remove the section from the local state for an instant UI update
+        setSections(prevSections => prevSections.filter(section => section.id !== sectionId));
+      } catch (err) {
+        const apiError = err.response?.data?.error || t('storefront.errors.delete_section', 'Failed to delete the section.');
+        setError(apiError);
+        console.error("Failed to delete section", err);
+      }
+    }
+  };
   const renderContent = () => {
     if (loading) {
       return <div className="text-center p-5"><Spinner animation="border" /></div>;
@@ -63,10 +77,17 @@ const StorefrontSettings = () => {
       <ul className="list-group mt-3">
         {sections.map(section => (
           <li key={section.id} className="list-group-item d-flex justify-content-between align-items-center">
-            <h5 className="mb-1 text-capitalize">{section.section_type.replace('_', ' ')}</h5>
-            <span className={`badge bg-${section.is_visible ? 'success' : 'secondary'}`}>
-              {section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}
-            </span>
+            <div>
+              <h5 className="mb-1 text-capitalize">{section.section_type.replace('_', ' ')}</h5>
+            </div>
+            <div>
+              <span className={`badge me-3 bg-${section.is_visible ? 'success' : 'secondary'}`}>
+                {section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}
+              </span>
+              <Button variant="outline-danger" size="sm" onClick={() => handleDeleteSection(section.id)}>
+                {t('common.delete', 'Delete')}
+              </Button>
+            </div>
           </li>
         ))}
       </ul>

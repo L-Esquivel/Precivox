@@ -110,3 +110,31 @@ def create_storefront_section():
         conn.rollback()
         current_app.logger.error(f"Error creating storefront section for tenant {tenant_id}: {e}")
         return jsonify({"error": "An internal error occurred while creating the section."}), 500
+
+@storefront_bp.route("/sections/<int:section_id>", methods=["DELETE"])
+@admin_required
+def delete_storefront_section(section_id):
+    """
+    Deletes a specific storefront section for the current tenant.
+    """
+    tenant_id = current_user.tenant_id
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            # The WHERE clause ensures a tenant can only delete their own sections.
+            cursor.execute(
+                "DELETE FROM storefront_sections WHERE id = %s AND tenant_id = %s",
+                (section_id, tenant_id)
+            )
+            
+            # Check if a row was actually deleted
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Section not found or you do not have permission to delete it."}), 404
+
+            conn.commit()
+            return jsonify({"message": "Section deleted successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Error deleting storefront section {section_id} for tenant {tenant_id}: {e}")
+        return jsonify({"error": "An internal error occurred while deleting the section."}), 500

@@ -12,4 +12,8 @@ export const storefrontAPI = {
     const response = await api.post('/api/tenant/storefront/sections', sectionData);
     return response.data;
   },
+  deleteSection: async (sectionId) => {
+    const response = await api.delete(`/api/tenant/storefront/sections/${sectionId}`);
+    return response.data;
+  },
 };
