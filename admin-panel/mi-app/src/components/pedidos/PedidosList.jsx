@@ -97,11 +97,19 @@ const PedidosList = () => {
     }
   };
 
-  const handleCreateOrder = async () => {
+  const handleCreateOrder = async (orderData) => {
     try {
       setError('');
-      await fetchInitialData();
+      // The backend expects a simpler payload. We adapt it here.
+      const payload = {
+        usuario_id: orderData.id_usuario,
+        telefono: orderData.customer.telefono,
+        direccion: orderData.customer.direccion,
+        items: orderData.items,
+      };
+      await pedidosService.createOrder(payload); // This method should do a POST to /pedidos
       closeNewOrderModal();
+      await fetchInitialData();
     } catch (error) {
       console.error('Error creating order:', error);
       setError(t('ordersList.errors.create_order'));
@@ -109,29 +117,16 @@ const PedidosList = () => {
     }
   };
 
-  useEffect(() => {
-    const handleOrderCreated = () => {
-      console.log('🔄 Reloading list due to new order...');
-      fetchInitialData();
-    };
-    const handleOrderUpdated = () => {
-      console.log('🔄 Reloading list due to updated order...');
-      fetchInitialData();
-    };
-    window.addEventListener('orderCreated', handleOrderCreated);
-    window.addEventListener('orderUpdated', handleOrderUpdated);
-    return () => {
-      window.removeEventListener('orderCreated', handleOrderCreated);
-      window.removeEventListener('orderUpdated', handleOrderUpdated);
-    };
-  }, []);
-
   const handleEditOrder = async (orderId, orderData) => {
     try {
       setError('');
-      await pedidosService.updateOrder(orderId, orderData);
-      await fetchInitialData();
+      await pedidosService.updateOrder(orderId, orderData); // This will call the new PUT endpoint
       closeEditOrderModal();
+      await fetchInitialData();
+      // Also refresh details if they are being shown
+      if (selectedOrderId === orderId) {
+        await fetchOrderDetails(orderId);
+      }
     } catch (error) {
       console.error('Error editing order:', error);
       setError(t('ordersList.errors.edit_order'));
@@ -463,10 +458,7 @@ const PedidosList = () => {
         <PedidoForm
           productos={products}
           onSubmit={handleCreateOrder}
-          onClose={() => {
-            closeNewOrderModal();
-            fetchInitialData();
-          }}
+          onClose={closeNewOrderModal}
           titulo={`➕ ${t('ordersList.new_order_modal.title')}`}
         />
       )}
@@ -477,13 +469,7 @@ const PedidosList = () => {
           pedido={orderToEdit}
           productos={products}
           onSubmit={handleEditOrder}
-          onClose={() => {
-            closeEditOrderModal();
-            fetchInitialData();
-            if (selectedOrderId === orderToEdit.id_pedido) {
-              fetchOrderDetails(orderToEdit.id_pedido);
-            }
-          }}
+          onClose={closeEditOrderModal}
         />
       )}
     </div>

@@ -263,6 +263,58 @@ def update_order_status(id):
         current_app.logger.error(f"Error in update_order_status: {e}", exc_info=True)
         return jsonify({"error": "Error updating order status"}), 500
 
+@pedidos_bp.route("/<int:id>", methods=["PUT"])
+@admin_required
+def update_order_admin(id):
+    """
+    Allows an administrator to update an existing order.
+    This replaces all items in the order and recalculates the total.
+    """
+    data = request.get_json()
+    tenant_id = current_user.tenant_id
+    conn = get_db()
+
+    items = data.get("items", [])
+    if not items:
+        return jsonify({"error": "An order must contain at least one product"}), 400
+
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            # 1. Recalculate total on the backend for security
+            new_total = 0
+            for item in items:
+                cursor.execute("SELECT precio FROM productos WHERE id_producto = %s AND tenant_id = %s", (item.get("id_producto"), tenant_id))
+                producto_data = cursor.fetchone()
+                if not producto_data:
+                    raise ValueError(f"Product with ID {item.get('id_producto')} not found.")
+                
+                precio_unitario = float(producto_data['precio'] or 0)
+                new_total += precio_unitario * int(item.get("cantidad"))
+
+            # 2. Delete old order details
+            cursor.execute("DELETE FROM detalle_pedidos WHERE pedido_id = %s AND tenant_id = %s", (id, tenant_id))
+
+            # 3. Insert new order details
+            for item in items:
+                precio_unitario = next((p['precio'] for p in [producto_data] if p['id_producto'] == item.get("id_producto")), 0) # Simplified for example
+                subtotal = float(item.get("precio_unitario")) * int(item.get("cantidad"))
+                cursor.execute("""
+                    INSERT INTO detalle_pedidos (pedido_id, producto_id, cantidad, precio_unitario, subtotal, tenant_id) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (id, item['id_producto'], item['cantidad'], item['precio_unitario'], subtotal, tenant_id))
+
+            # 4. Update the main order's total
+            cursor.execute("UPDATE pedidos SET total = %s WHERE id_pedido = %s AND tenant_id = %s", (new_total, id, tenant_id))
+
+            conn.commit()
+            register_log(f"Admin updated order ID {id}")
+            return jsonify({"message": "Order updated successfully", "id_pedido": id, "new_total": new_total})
+
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Error in update_order_admin: {e}", exc_info=True)
+        return jsonify({"error": "Internal error updating order"}), 500
+
 @pedidos_bp.route("/<int:id>", methods=["DELETE"])
 @admin_required
 def delete_order(id):

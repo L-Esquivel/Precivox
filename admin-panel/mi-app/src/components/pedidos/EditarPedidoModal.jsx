@@ -76,8 +76,6 @@ const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
 
     try {
       await onSubmit(pedido.id_pedido, updatedOrderData);
-      const event = new CustomEvent('orderUpdated');
-      window.dispatchEvent(event);
     } catch (err) {
       // Error is handled in the parent component
     } finally {
