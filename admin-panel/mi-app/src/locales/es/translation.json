@@ -3,5 +3,12 @@
   "logout": "Cerrar Sesión",
   "homeDashboard": "Inicio / Dashboard",
   "tenants": "Inquilinos",
-  "support": "Soporte"
+  "support": "Soporte",
+  "menu.users": "Usuarios",
+  "menu.products": "Productos",
+  "menu.orders": "Pedidos",
+  "menu.supplies": "Insumos",
+  "menu.recipes": "Recetas",
+  "menu.expenses": "Gastos",
+  "menu.waste": "Merma"
 }

@@ -3,5 +3,12 @@
   "logout": "Logout",
   "homeDashboard": "Home / Dashboard",
   "tenants": "Tenants",
-  "support": "Support"
+  "support": "Support",
+  "menu.users": "Users",
+  "menu.products": "Products",
+  "menu.orders": "Orders",
+  "menu.supplies": "Supplies",
+  "menu.recipes": "Recipes",
+  "menu.expenses": "Expenses",
+  "menu.waste": "Waste"
 }

@@ -22,6 +22,17 @@ function App() {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [showSupportModal, setShowSupportModal] = useState(false);
 
+  // This object maps the labels from the database to our i18n keys.
+  // This is a practical workaround when you can't change the backend to send keys directly.
+  const labelToTKey = {
+    'Usuarios': 'menu.users',
+    'Productos': 'menu.products',
+    'Pedidos': 'menu.orders',
+    'Insumos': 'menu.supplies',
+    'Recetas': 'menu.recipes',
+    'Gastos': 'menu.expenses',
+    'Merma': 'menu.waste',
+  };
   const renderSection = () => {
     switch (activeSection) {
       case 'usuarios': return <UsuariosList />;
@@ -90,7 +101,7 @@ function App() {
                       className={`nav-link w-100 text-start ${activeSection === module.module_key ? 'active' : ''}`} 
                       onClick={() => setActiveSection(module.module_key)}
                     >
-                      {module.icon} {module.label}
+                      {module.icon} {t(labelToTKey[module.label] || module.label)}
                     </button>
                   </li>
                 ))}
