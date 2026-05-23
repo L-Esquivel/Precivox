@@ -80,7 +80,8 @@ if not allowed_origins or allowed_origins == ['']:
         "https://precivox.vercel.app",          # Main domain for the admin panel
         "https://sweetlandbyanny.vercel.app", # Landing page domain
         "http://localhost:5173",                # For local development of the admin panel
-        "http://127.0.0.1:5173"                 # Alternative for local development
+        "http://127.0.0.1:5173",
+        "https://precivox-storefront.vercel.app"                                  # Alternative for local development
     ]
 
 CORS(app, origins=allowed_origins, supports_credentials=True)
