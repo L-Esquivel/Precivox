@@ -10,6 +10,7 @@ import cloudinary
 import cloudinary.uploader
 
 storefront_bp = Blueprint("storefront_bp", __name__)
+public_storefront_bp = Blueprint("public_storefront_bp", __name__)
 
 # Endpoint for the admin panel to manage sections
 @storefront_bp.route("/sections", methods=["GET"])
@@ -283,3 +284,42 @@ def upload_storefront_image():
     except Exception as e:
         current_app.logger.error(f"Cloudinary upload failed for tenant {tenant_id}: {e}")
         return jsonify({"error": "Image upload failed."}), 500
+
+@public_storefront_bp.route("/<string:tenant_slug>", methods=["GET"])
+def get_public_storefront_data(tenant_slug):
+    """
+    Fetches all VISIBLE storefront sections for a given tenant slug.
+    This is a public endpoint.
+    """
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            # First, find the tenant_id from the slug
+            cursor.execute("SELECT id_tenant FROM tenants WHERE slug = %s", (tenant_slug,))
+            tenant_row = cursor.fetchone()
+            if not tenant_row:
+                return jsonify({"error": "Tenant not found"}), 404
+            
+            tenant_id = tenant_row['id_tenant']
+
+            # Now, fetch the visible sections for that tenant
+            cursor.execute(
+                """
+                SELECT section_type, content, display_order 
+                FROM storefront_sections 
+                WHERE tenant_id = %s AND is_visible = TRUE 
+                ORDER BY display_order ASC
+                """,
+                (tenant_id,)
+            )
+            rows = cursor.fetchall()
+            
+            sections = [dict(row) for row in rows]
+
+            return jsonify(sections)
+    except errors.UndefinedTable:
+        current_app.logger.warning(f"Public storefront request for slug '{tenant_slug}' found no 'storefront_sections' table. Returning empty list.")
+        return jsonify([])
+    except Exception as e:
+        current_app.logger.error(f"Error fetching public storefront for slug {tenant_slug}: {e}")
+        return jsonify({"error": "An error occurred while loading the page."}), 500

@@ -147,7 +147,7 @@ from platform_api import platform_bp # Corrected import
 from modules import modules_bp      # Added missing import
 from payments import payments_bp
 from settings import settings_bp    # Import the new settings blueprint
-from storefront import storefront_bp # Import the storefront blueprint
+from storefront import storefront_bp, public_storefront_bp # Import both storefront blueprints
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(users_bp)
@@ -164,7 +164,8 @@ app.register_blueprint(platform_bp)
 app.register_blueprint(modules_bp)
 app.register_blueprint(payments_bp)
 app.register_blueprint(settings_bp) # Register the new settings blueprint
-app.register_blueprint(storefront_bp, url_prefix='/api/tenant/storefront') # Register the storefront blueprint
+app.register_blueprint(storefront_bp, url_prefix='/api/tenant/storefront') # Register the admin storefront blueprint
+app.register_blueprint(public_storefront_bp, url_prefix='/api/public/storefront') # Register the public storefront blueprint
 
 # ==========================================
 # 🌍 FILE AND STATUS ROUTES
