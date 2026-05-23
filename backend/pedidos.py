@@ -342,38 +342,6 @@ def delete_order(id):
         current_app.logger.error(f"Error in delete_order: {e}", exc_info=True)
         return jsonify({"error": "Error deleting order"}), 500
 
-@pedidos_bp.route("/<int:id>/detalles", methods=["GET"])
-@login_required
-def get_order_details_admin(id):
-    tenant_id = current_user.tenant_id
-    conn = get_db()
-    cursor = conn.cursor(cursor_factory=DictCursor)
-    try:
-        # This route is now redundant with /detalle_pedidos/pedido/<id>, but we keep it for backward compatibility.
-        cursor.execute("""
-            SELECT dp.*, p.nombre as producto_nombre, p.categoria 
-            FROM detalle_pedidos dp JOIN productos p ON dp.producto_id = p.id_producto
-            WHERE dp.pedido_id = %s AND dp.tenant_id = %s
-        """, (id, tenant_id))
-        rows = cursor.fetchall()
-        # Explicitly build the response to ensure correct data types and prevent serialization issues.
-        details = []
-        for row in rows:
-            details.append({
-                "id_detalle_pedido": row["id_detalle_pedido"],
-                "pedido_id": row["pedido_id"],
-                "producto_id": row["producto_id"],
-                "cantidad": int(row["cantidad"]),
-                "precio_unitario": float(row["precio_unitario"] or 0),
-                "subtotal": float(row["subtotal"] or 0),
-                "producto_nombre": row["producto_nombre"],
-                "categoria": row["categoria"]
-            })
-        return jsonify(details)
-    except Exception as e:
-        current_app.logger.error(f"Error in get_order_details_admin: {e}")
-        return jsonify({"error": "Error fetching details"}), 500
-
 # ==================== PUBLIC ENDPOINTS 🌍 ====================
 
 @pedidos_bp.route("/public", methods=["POST"])

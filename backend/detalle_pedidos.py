@@ -97,7 +97,7 @@ def get_detalles_por_pedido(pedido_id):
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute("""
             SELECT 
-                dp.id_detalle AS id,
+                dp.id_detalle AS id_detalle_pedido,
                 dp.pedido_id,
                 dp.producto_id,
                 p.nombre AS producto_nombre,
@@ -110,15 +110,24 @@ def get_detalles_por_pedido(pedido_id):
             WHERE dp.pedido_id = %s AND dp.tenant_id = %s
             ORDER BY dp.id_detalle ASC
             """, (tenant_id, pedido_id, tenant_id))
-            detalles = cursor.fetchall()
+            rows = cursor.fetchall()
 
-            # Ensure numeric types
-            for d in detalles:
-                d["cantidad"] = int(d.get("cantidad", 0) or 0)
-                d["precio_unitario"] = float(d.get("precio_unitario", 0) or 0)
-                d["subtotal"] = float(d.get("subtotal", 0) or 0)
+            # FIX: Explicitly build the response to ensure correct data types and prevent serialization issues.
+            # This is the same robust pattern used in the previous fix and solves the 'undefined' issue.
+            details = []
+            for row in rows:
+                details.append({
+                    "id_detalle_pedido": row["id_detalle_pedido"],
+                    "pedido_id": row["pedido_id"],
+                    "producto_id": row["producto_id"],
+                    "cantidad": int(row["cantidad"] or 0),
+                    "precio_unitario": float(row["precio_unitario"] or 0),
+                    "subtotal": float(row["subtotal"] or 0),
+                    "producto_nombre": row["producto_nombre"],
+                    "categoria": row["categoria"]
+                })
 
-            return jsonify(detalles)
+            return jsonify(details)
     except Exception as e:
         logger.error(f"Error en get_detalles_por_pedido: {e}", exc_info=True)
         return jsonify({"error": "Error fetching order details"}), 500
