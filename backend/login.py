@@ -117,6 +117,8 @@ def login():
             "usuario": {
                 "id": user.id, "nombre": user.nombre, 
                 "email": user.email, "rol": user.rol,
+                "telefono": user.telefono,
+                "direccion": user.direccion,
                 "tenant_slug": tenant_slug,
                 "module_settings": user.module_settings
             }
@@ -300,6 +302,8 @@ def get_current_user():
         "usuario": {
             "id": current_user.id, "nombre": current_user.nombre, 
             "email": current_user.email, "rol": current_user.rol,
+            "telefono": current_user.telefono,
+            "direccion": current_user.direccion,
             "tenant_slug": tenant_slug,
             "module_settings": current_user.module_settings
         }
