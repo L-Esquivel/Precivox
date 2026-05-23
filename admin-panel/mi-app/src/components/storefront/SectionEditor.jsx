@@ -8,10 +8,14 @@ const SectionEditor = ({ section, onClose, onSave }) => {
   const [content, setContent] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
     // When a new section is selected, reset the content state
     setContent(section.content || {});
+    setImagePreview(section.content?.imageUrl || '');
+    setImageFile(null); // Reset file input on new section selection
     setError(null);
   }, [section]);
 
@@ -20,12 +24,37 @@ const SectionEditor = ({ section, onClose, onSave }) => {
     setContent(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
+    let finalContent = { ...content };
+
+    if (imageFile) {
+      try {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        const uploadResponse = await storefrontAPI.uploadImage(formData);
+        finalContent.imageUrl = uploadResponse.filename; // The secure URL from Cloudinary
+      } catch (uploadError) {
+        setError(t('storefront.editor.upload_error', 'Failed to upload image.'));
+        console.error(uploadError);
+        setIsSaving(false);
+        return;
+      }
+    }
+
     try {
-      await storefrontAPI.updateSection(section.id, { content });
-      onSave({ ...section, content }); // Update parent state
+      await storefrontAPI.updateSection(section.id, { content: finalContent });
+      onSave({ ...section, content: finalContent }); // Update parent state
     } catch (err) {
       setError(t('storefront.editor.save_error', 'Failed to save changes.'));
       console.error(err);
@@ -57,6 +86,22 @@ const SectionEditor = ({ section, onClose, onSave }) => {
                 value={content.subtitle || ''}
                 onChange={handleContentChange}
               />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>{t('storefront.editor.hero.image', 'Background Image')}</Form.Label>
+              {imagePreview && (
+                <div className="mb-2">
+                  <img src={imagePreview} alt={t('storefront.editor.image_preview', 'Image Preview')} className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                </div>
+              )}
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <Form.Text className="text-muted">
+                {t('storefront.editor.image_help', 'Recommended size: 1920x1080px.')}
+              </Form.Text>
             </Form.Group>
           </>
         );

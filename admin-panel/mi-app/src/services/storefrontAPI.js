@@ -24,4 +24,13 @@ export const storefrontAPI = {
     const response = await api.put(`/api/tenant/storefront/sections/${sectionId}`, updateData);
     return response.data;
   },
+  uploadImage: async (imageData) => {
+    // imageData is a FormData object
+    const response = await api.post('/api/tenant/storefront/upload-image', imageData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };

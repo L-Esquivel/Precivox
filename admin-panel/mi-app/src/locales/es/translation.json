@@ -394,5 +394,9 @@
   "storefront.editor.no_fields": "Este tipo de sección aún no tiene campos editables.",
   "storefront.editor.hero.title": "Título",
   "storefront.editor.hero.subtitle": "Subtítulo",
-  "storefront.errors.update_visibility": "Error al actualizar la visibilidad. Revirtiendo cambio."
+  "storefront.errors.update_visibility": "Error al actualizar la visibilidad. Revirtiendo cambio.",
+  "storefront.editor.hero.image": "Imagen de Fondo",
+  "storefront.editor.image_preview": "Vista Previa de Imagen",
+  "storefront.editor.image_help": "Tamaño recomendado: 1920x1080px.",
+  "storefront.editor.upload_error": "Error al subir la imagen."
 }

@@ -6,6 +6,8 @@ from psycopg2.extras import DictCursor
 from psycopg2 import errors, sql
 import datetime
 import json
+import cloudinary
+import cloudinary.uploader
 
 storefront_bp = Blueprint("storefront_bp", __name__)
 
@@ -255,3 +257,29 @@ def update_storefront_section(section_id):
         conn.rollback()
         current_app.logger.error(f"Error updating storefront section {section_id} for tenant {tenant_id}: {e}")
         return jsonify({"error": "An internal error occurred while updating the section."}), 500
+
+@storefront_bp.route("/upload-image", methods=["POST"])
+@admin_required
+def upload_storefront_image():
+    """
+    Uploads an image to Cloudinary for use in storefront sections.
+    """
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+
+    file_to_upload = request.files['image']
+    tenant_id = current_user.tenant_id
+
+    try:
+        # Upload to a specific folder for the tenant to keep things organized
+        upload_result = cloudinary.uploader.upload(
+            file_to_upload,
+            folder=f"tenant_{tenant_id}/storefront",
+            resource_type="image"
+        )
+        # Return the secure URL in a 'filename' key to match existing patterns
+        return jsonify({"filename": upload_result['secure_url']}), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Cloudinary upload failed for tenant {tenant_id}: {e}")
+        return jsonify({"error": "Image upload failed."}), 500
