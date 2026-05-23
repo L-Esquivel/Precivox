@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const UserForm = ({ user, onSubmit, onClose }) => {
-  const [formData, setFormData] = useState({
   const { t } = useTranslation();
+  const [formData, setFormData] = useState({
     nombre: '',
     email: '',
     password: '',
