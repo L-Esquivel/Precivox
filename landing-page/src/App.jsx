@@ -1,13 +1,9 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import React, { useState, useEffect } from 'react';
 import { getSubdomain } from './utils/subdomain';
 import { storefrontService } from './services/storefrontService';
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,7 +40,7 @@ function App() {
     if (!imgName) return 'https://via.placeholder.com/400x300';
     if (imgName.startsWith('http')) return imgName; // It's a Cloudinary URL
     // Fallback for old, local images
-    return `<https://sweetland-by-anny-production.up.railway.app/static/images/${imgName}>`;
+    return `https://sweetland-by-anny-production.up.railway.app/static/images/${imgName}`;
   };
 
   if (loading) {
@@ -62,28 +58,6 @@ function App() {
   const { settings, products } = store;
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
     <div className="storefront-container">
       <header className="store-header" style={{ backgroundImage: `url(${getImageUrl(settings.hero_image_url)})` }}>
         <div className="header-overlay">
@@ -110,7 +84,7 @@ function App() {
         <p>&copy; {new Date().getFullYear()} {settings.welcome_title}. All rights reserved.</p>
         <div className="social-links">
           {settings.social_instagram_url && <a href={settings.social_instagram_url} target="_blank" rel="noopener noreferrer">Instagram</a>}
-          {settings.social_whatsapp_number && <a href={`<https://wa.me/${settings.social_whatsapp_number}>`} target="_blank" rel="noopener noreferrer">WhatsApp</a>}
+          {settings.social_whatsapp_number && <a href={`https://wa.me/${settings.social_whatsapp_number}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>}
         </div>
       </footer>
     </div>
