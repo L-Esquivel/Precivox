@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pedidosService } from '../../services/pedidosService';
+import { formatCurrency } from '../../utils/formatters';
 
 const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
   const { t, i18n } = useTranslation();
@@ -83,11 +84,6 @@ const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
     }
   };
 
-  const formatCurrency = (value) => {
-    const lang = i18n.language === 'es' ? 'es-CO' : 'en-US';
-    return new Intl.NumberFormat(lang, { style: 'currency', currency: 'COP' }).format(value || 0);
-  };
-
   return (
     <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
       <div className="modal-dialog modal-xl">
@@ -115,7 +111,7 @@ const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
                     <select className="form-select" value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}>
                       <option value="">{t('orderForm.select_product')}</option>
                       {productos.map(p => (
-                        <option key={p.id_producto} value={p.id_producto}>{p.nombre} - {formatCurrency(p.precio)}</option>
+                        <option key={p.id_producto} value={p.id_producto}>{p.nombre} - {formatCurrency(p.precio, i18n)}</option>
                       ))}
                     </select>
                     <button className="btn btn-outline-primary" type="button" onClick={handleAddProduct}>{t('orderForm.add_button')}</button>
@@ -148,8 +144,8 @@ const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
                                   min="1"
                                 />
                               </td>
-                              <td>{formatCurrency(item.precio_unitario)}</td>
-                              <td>{formatCurrency(parseFloat(item.precio_unitario) * item.cantidad)}</td>
+                              <td>{formatCurrency(item.precio_unitario, i18n)}</td>
+                              <td>{formatCurrency(parseFloat(item.precio_unitario) * item.cantidad, i18n)}</td>
                               <td className="text-center">
                                 <button type="button" className="btn btn-danger btn-sm" onClick={() => handleRemoveProduct(item.id_producto)}>
                                   &times;
@@ -163,7 +159,7 @@ const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
                   </div>
                   <hr />
                   <div className="text-end">
-                    <h4 className="mb-0">{t('orderForm.total')} <span className="text-success">{formatCurrency(total)}</span></h4>
+                    <h4 className="mb-0">{t('orderForm.total')} <span className="text-success">{formatCurrency(total, i18n)}</span></h4>
                   </div>
                 </>
               )}

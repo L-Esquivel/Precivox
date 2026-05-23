@@ -5,6 +5,7 @@ import { pedidosService } from '../../services/pedidosService';
 import { productosService } from '../../services/productosService';
 import PedidoForm from './PedidoForm';
 import EditarPedidoModal from './EditarPedidoModal';
+import { formatCurrency } from '../../utils/formatters';
 
 const PedidosList = () => {
   const { t, i18n } = useTranslation();
@@ -150,14 +151,6 @@ const PedidosList = () => {
     });
   };
 
-  const formatCurrency = (value) => {
-    const lang = i18n.language === 'es' ? 'es-CO' : 'en-US';
-    return new Intl.NumberFormat(lang, {
-      style: 'currency',
-      currency: 'COP', // Assuming Colombian Pesos
-    }).format(value || 0);
-  };
-
   const generateReceipt = async (order) => {
     try {
       const details = await pedidosService.getOrderDetails(order.id_pedido);
@@ -213,13 +206,13 @@ const PedidosList = () => {
                     <tr>
                       <td>${detail.producto_nombre}</td>
                       <td>${detail.cantidad}</td>
-                      <td>${formatCurrency(parseFloat(detail.precio_unitario) || 0)}</td>
-                      <td>${formatCurrency(parseFloat(detail.subtotal) || 0)}</td>
+                      <td>${formatCurrency(parseFloat(detail.precio_unitario) || 0, i18n)}</td>
+                      <td>${formatCurrency(parseFloat(detail.subtotal) || 0, i18n)}</td>
                     </tr>
                   `).join('')}
                   <tr class="total-row">
                     <td colspan="3" style="text-align: right;"><strong>${t('ordersList.details.total').toUpperCase()}</strong></td>
-                    <td><strong>${formatCurrency(details.reduce((sum, d) => sum + (parseFloat(d.subtotal) || 0), 0))}</strong></td>
+                    <td><strong>${formatCurrency(details.reduce((sum, d) => sum + (parseFloat(d.subtotal) || 0), 0), i18n)}</strong></td>
                   </tr>
                 </tbody>
               </table>
@@ -323,7 +316,7 @@ const PedidosList = () => {
                               {statuses.find(e => e.value === order.estado)?.label || order.estado}
                             </button>
                           </td>
-                          <td className="fw-bold text-success">{formatCurrency(order.total)}</td>
+                          <td className="fw-bold text-success">{formatCurrency(order.total, i18n)}</td>
                           <td className="text-center">
                             <div className="btn-group" role="group">
                               <button
@@ -393,8 +386,8 @@ const PedidosList = () => {
                                 <small className="text-muted">{detail.categoria}</small>
                               </td>
                               <td className="fw-bold">{detail.cantidad}</td>
-                              <td>{formatCurrency(parseFloat(detail.precio_unitario) || 0)}</td>
-                              <td className="fw-bold text-success">{formatCurrency(parseFloat(detail.subtotal) || 0)}</td>
+                              <td>{formatCurrency(parseFloat(detail.precio_unitario) || 0, i18n)}</td>
+                              <td className="fw-bold text-success">{formatCurrency(parseFloat(detail.subtotal) || 0, i18n)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -402,7 +395,7 @@ const PedidosList = () => {
                           <tr>
                             <td colSpan="3" className="fw-bold">{t('ordersList.details.total')}</td>
                             <td className="fw-bold text-success">
-                              {formatCurrency(orderDetails.reduce((sum, d) => sum + (parseFloat(d.subtotal) || 0), 0))}
+                              {formatCurrency(orderDetails.reduce((sum, d) => sum + (parseFloat(d.subtotal) || 0), 0), i18n)}
                             </td>
                           </tr>
                         </tfoot>

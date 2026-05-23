@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pedidosService } from '../../services/pedidosService';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { formatCurrency } from '../../utils/formatters';
 import './TenantDashboard.css';
 
 const TenantDashboard = ({ user }) => {
   const [stats, setStats] = useState(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -55,11 +56,6 @@ const TenantDashboard = ({ user }) => {
     setAppliedFilters(dateRange);
   };
 
-  const formatCurrency = (value) => {
-    // Using a more generic currency format, can be adjusted
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value || 0);
-  };
-
   if (loading) {
     return <div className="text-center p-5"><h3>{t('tenantDashboard.loading')}</h3></div>;
   }
@@ -96,7 +92,7 @@ const TenantDashboard = ({ user }) => {
             <div className="card text-white bg-success h-100">
               <div className="card-body">
                 <h5 className="card-title">{t('tenantDashboard.totalSales')}</h5>
-                <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_sales_range)}</p>
+                <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_sales_range, i18n)}</p>
               </div>
             </div>
           </div>
@@ -112,7 +108,7 @@ const TenantDashboard = ({ user }) => {
             <div className="card text-white bg-warning h-100">
               <div className="card-body">
                 <h5 className="card-title">{t('tenantDashboard.totalExpenses')}</h5>
-                <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_expenses_range)}</p>
+                <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_expenses_range, i18n)}</p>
               </div>
             </div>
           </div>
@@ -120,7 +116,7 @@ const TenantDashboard = ({ user }) => {
             <div className="card text-white bg-danger h-100">
               <div className="card-body">
                 <h5 className="card-title">{t('tenantDashboard.totalWaste')}</h5>
-                <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_waste_range)}</p>
+                <p className="card-text fs-4 fw-bold">{formatCurrency(stats.summary.total_waste_range, i18n)}</p>
               </div>
             </div>
           </div>
@@ -140,7 +136,7 @@ const TenantDashboard = ({ user }) => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="fecha" />
                   <YAxis tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(value) => [formatCurrency(value), 'Sale']} />
+                  <Tooltip formatter={(value) => [formatCurrency(value, i18n), 'Sale']} />
                   <Legend />
                   <Line type="monotone" dataKey="venta" name="Sales" stroke="#28a745" strokeWidth={2} activeDot={{ r: 8 }} />
                 </LineChart>
