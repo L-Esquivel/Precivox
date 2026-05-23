@@ -3,6 +3,7 @@ from flask_login import current_user
 from utils import admin_required
 from db import get_db
 from psycopg2.extras import DictCursor
+from psycopg2 import errors
 import datetime
 
 storefront_bp = Blueprint("storefront_bp", __name__)
@@ -38,6 +39,15 @@ def get_storefront_sections():
                 sections.append(section)
 
             return jsonify(sections)
+    except errors.UndefinedTable:
+        # This can happen if the database migration for this feature has not been run.
+        # Instead of crashing with a 500 error, we log a warning and return an empty list,
+        # which is a valid state for the frontend (meaning "no sections configured yet").
+        current_app.logger.warning(
+            f"The 'storefront_sections' table was not found for tenant {tenant_id}. "
+            "This is expected if the database schema has not been updated. Returning an empty list."
+        )
+        return jsonify([])
     except Exception as e:
         # Log the detailed error for debugging on the server
         current_app.logger.error(f"Error fetching storefront sections for tenant {tenant_id}: {e}")
