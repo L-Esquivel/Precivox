@@ -17,7 +17,12 @@ const StorefrontSettings = () => {
         setSections(data);
         setError(null);
       } catch (err) {
-        setError(t('storefront.errors.load_sections', 'Failed to load storefront sections.'));
+        const apiErrorMsg = err.response?.data?.error;
+        if (apiErrorMsg === 'Feature not available: Database is not up to date.') {
+          setError(t('storefront.errors.db_not_ready'));
+        } else {
+          setError(t('storefront.errors.load_sections', 'Failed to load storefront sections.'));
+        }
         console.error(err);
       } finally {
         setLoading(false);
@@ -25,7 +30,7 @@ const StorefrontSettings = () => {
     };
 
     fetchSections();
-  }, [t]);
+  }, [t]); // t is a stable function, but it's good practice to include it.
 
   const handleAddSection = async () => {
     // For now, we'll add a 'hero' section by default.
@@ -36,8 +41,13 @@ const StorefrontSettings = () => {
       // Add the new section to the local state to update the UI instantly
       setSections(prevSections => [...prevSections, newSection]);
     } catch (err) {
-      // Display the specific error from the API, or a generic one as a fallback.
-      const apiError = err.response?.data?.error || t('storefront.errors.add_section', 'Failed to add the new section.');
+      const apiErrorMsg = err.response?.data?.error;
+      let apiError;
+      if (apiErrorMsg === 'Feature not available: Database is not up to date.') {
+        apiError = t('storefront.errors.db_not_ready');
+      } else {
+        apiError = apiErrorMsg || t('storefront.errors.add_section', 'Failed to add the new section.');
+      }
       setError(apiError);
       console.error("Failed to add section", err);
     }
@@ -50,7 +60,13 @@ const StorefrontSettings = () => {
         // Remove the section from the local state for an instant UI update
         setSections(prevSections => prevSections.filter(section => section.id !== sectionId));
       } catch (err) {
-        const apiError = err.response?.data?.error || t('storefront.errors.delete_section', 'Failed to delete the section.');
+        const apiErrorMsg = err.response?.data?.error;
+        let apiError;
+        if (apiErrorMsg === 'Feature not available: Database is not up to date.') {
+          apiError = t('storefront.errors.db_not_ready');
+        } else {
+          apiError = apiErrorMsg || t('storefront.errors.delete_section', 'Failed to delete the section.');
+        }
         setError(apiError);
         console.error("Failed to delete section", err);
       }
