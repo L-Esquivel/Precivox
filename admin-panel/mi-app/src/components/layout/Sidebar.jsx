@@ -1,52 +1,67 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
-const Sidebar = () => {
-  const { user, logout } = useAuth();
+const Sidebar = ({ onShowSupport }) => {
+  const { user } = useAuth();
   const { t } = useTranslation();
-  const location = useLocation();
 
-  const modulePaths = {
-    dashboard: '/dashboard',
-    users: '/users',
-    products: '/products',
-    orders: '/orders',
-    supplies: '/supplies',
-    recipes: '/recipes',
-    expenses: '/expenses',
-    waste: '/waste',
-    storefront: '/storefront-settings',
+  // This is the original logic from your App.jsx, which is crucial.
+  const labelToTKey = {
+    'Usuarios': 'menu.users',
+    'Productos': 'menu.products',
+    'Pedidos': 'menu.orders',
+    'Insumos': 'menu.supplies',
+    'Recetas': 'menu.recipes',
+    'Gastos': 'menu.expenses',
+    'Merma': 'menu.waste',
   };
 
-  const isActive = (path) => location.pathname.startsWith(path);
+  // NavLink adds an 'active' class by default, which your App.css uses.
+  const getNavLinkClass = ({ isActive }) => `nav-button ${isActive ? 'active' : ''}`;
 
   return (
-    <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style={{ width: '280px', height: '100vh' }}>
-      <Link to="/dashboard" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span className="fs-4">Precivox Panel</span>
-      </Link>
-      <hr />
-      <ul className="nav nav-pills flex-column mb-auto">
-        {user?.module_settings?.map(module => {
-          const path = modulePaths[module.module_key];
-          if (!path) return null;
+    <nav className="sidebar">
+      <ul className="nav-menu">
+        <li>
+          <NavLink to="/dashboard" className={getNavLinkClass}>
+            📊 {t('homeDashboard')}
+          </NavLink>
+        </li>
 
-          return (
-            <li className="nav-item" key={module.module_key}>
-              <Link to={path} className={`nav-link text-white ${isActive(path) ? 'active' : ''}`}>
-                {module.label}
-              </Link>
+        {user?.rol === 'superadmin' && (
+          <li>
+            <NavLink to="/tenants" className={getNavLinkClass}>
+              🏢 {t('tenants')}
+            </NavLink>
+          </li>
+        )}
+        
+        {user?.rol === 'admin' && (
+          <>
+            {user.module_settings?.map(module => (
+              <li key={module.module_key}>
+                <NavLink to={`/${module.module_key.toLowerCase()}`} className={getNavLinkClass}>
+                  {module.icon} {t(labelToTKey[module.label] || module.label)}
+                </NavLink>
+              </li>
+            ))}
+            <li>
+              <NavLink to="/storefront-settings" className={getNavLinkClass}>
+                🛍️ {t('menu.storefront')}
+              </NavLink>
             </li>
-          );
-        })}
+            <hr />
+            <li>
+              <button className="nav-button" onClick={onShowSupport}>
+                ❓ {t('support')}
+              </button>
+            </li>
+          </>
+        )}
       </ul>
-      <hr />
-      <div className="text-center">
-        <button className="btn btn-outline-light w-100" onClick={logout}>{t('logout')}</button>
-      </div>
-    </div>
+    </nav>
   );
 };
 

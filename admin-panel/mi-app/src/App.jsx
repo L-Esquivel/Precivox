@@ -31,7 +31,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       
-      {/* Todas las rutas protegidas son hijas de esta ruta */}
+      {/* All protected routes are children of this route */}
       <Route 
         path="/" 
         element={
@@ -40,10 +40,10 @@ function App() {
           </ProtectedRoute>
         }
       >
-        {/* La ruta 'index' redirige de '/' a '/dashboard' */}
+        {/* The 'index' route redirects from '/' to '/dashboard' */}
         <Route index element={<Navigate to="/dashboard" replace />} />
         
-        {/* Módulos de tu aplicación */}
+        {/* Your app's modules */}
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<UsersList />} />
         <Route path="products" element={<ProductsList />} />
@@ -55,7 +55,7 @@ function App() {
         <Route path="storefront-settings" element={<StorefrontSettings />} />
         <Route path="tenants" element={<TenantsList />} />
         
-        {/* Una ruta de fallback para redirigir cualquier ruta desconocida al dashboard */}
+        {/* A fallback route to redirect any unknown path to the dashboard */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
