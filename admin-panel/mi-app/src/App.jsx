@@ -7,7 +7,8 @@ import ProductosList from './components/productos/ProductosList';
 import PedidosList from './components/pedidos/PedidosList';
 import InsumosPage from "./components/Insumos/InsumosPage";
 import RecetasList from "./components/recetas/RecetasList";
-import Dashboard from './components/Dashboard';
+// Corrected path to match the file structure (components/dashboard/dashboard.jsx)
+import Dashboard from './components/dashboard/dashboard';
 import GastosList from './components/gastos/GastosList';
 import MermaList from './components/merma/MermaList';
 import TenantsList from './components/tenants/TenantsList';
