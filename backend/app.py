@@ -135,6 +135,7 @@ from tenants import tenants_bp
 from platform_api import platform_bp # Corrected import
 from modules import modules_bp      # Added missing import
 from payments import payments_bp
+from settings import settings_bp    # Import the new settings blueprint
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(users_bp)
@@ -150,6 +151,7 @@ app.register_blueprint(tenants_bp)
 app.register_blueprint(platform_bp)
 app.register_blueprint(modules_bp)
 app.register_blueprint(payments_bp)
+app.register_blueprint(settings_bp) # Register the new settings blueprint
 
 # ==========================================
 # 🌍 FILE AND STATUS ROUTES
