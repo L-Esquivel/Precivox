@@ -89,8 +89,23 @@ def create_storefront_section():
             new_section_raw = cursor.fetchone()
             conn.commit()
 
-            return jsonify(dict(new_section_raw)), 201
+            # Convert to dict and serialize datetime objects before returning
+            new_section = dict(new_section_raw)
+            if new_section.get('created_at') and isinstance(new_section.get('created_at'), datetime.datetime):
+                new_section['created_at'] = new_section['created_at'].isoformat()
+            if new_section.get('updated_at') and isinstance(new_section.get('updated_at'), datetime.datetime):
+                new_section['updated_at'] = new_section['updated_at'].isoformat()
 
+            return jsonify(new_section), 201
+
+    except errors.UndefinedTable:
+        conn.rollback()
+        current_app.logger.error(
+            f"CRITICAL: Attempt to create a storefront section failed because 'storefront_sections' table does not exist. Tenant ID: {tenant_id}. "
+            "The database schema is out of date. Please run the necessary migrations."
+        )
+        # Return 503 Service Unavailable, as the service is not ready to handle this request
+        return jsonify({"error": "Feature not available: Database is not up to date."}), 503
     except Exception as e:
         conn.rollback()
         current_app.logger.error(f"Error creating storefront section for tenant {tenant_id}: {e}")

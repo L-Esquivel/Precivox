@@ -36,8 +36,9 @@ const StorefrontSettings = () => {
       // Add the new section to the local state to update the UI instantly
       setSections(prevSections => [...prevSections, newSection]);
     } catch (err) {
-      // In a real app, we would use a toast notification for a better UX
-      setError(t('storefront.errors.add_section', 'Failed to add the new section.'));
+      // Display the specific error from the API, or a generic one as a fallback.
+      const apiError = err.response?.data?.error || t('storefront.errors.add_section', 'Failed to add the new section.');
+      setError(apiError);
       console.error("Failed to add section", err);
     }
   };
