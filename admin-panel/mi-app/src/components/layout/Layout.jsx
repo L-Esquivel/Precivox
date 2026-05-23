@@ -13,21 +13,23 @@ const Layout = () => {
 
   return (
     <div className="app">
-      {/* This header structure is restored from your original App.jsx to maintain the design */}
-      <header className="app-header navbar navbar-expand-lg navbar-dark">
-        <div className="container-fluid">
-          <Link to="/dashboard" className="navbar-brand d-flex align-items-center">
+      {/* This header structure is restored to match the original design from App.css */}
+      <header className="app-header">
+        <div className="header-content">
+          <Link to="/dashboard">
             <img src="/logo-precivox.png" alt="Precivox Logo" className="header-logo" />
           </Link>
-          <div className="navbar-nav ms-auto">
+          <div className="header-info">
             {user && (
-              <div className="d-flex align-items-center gap-3">
-                <span className="navbar-text text-white">
-                  {user.nombre} <small className="d-block text-warning text-end">{user.rol?.toUpperCase()}</small>
-                </span>
-                <LanguageSwitcher />
-                <button className="btn btn-outline-light btn-sm" onClick={logout}>🚪 {t('logout')}</button>
-              </div>
+              <>
+                <div className="user-info">
+                  <span>
+                    {user.nombre} <small className="d-block text-end" style={{ color: '#ffc107' }}>{user.rol?.toUpperCase()}</small>
+                  </span>
+                  <LanguageSwitcher />
+                </div>
+                <button className="logout-btn" onClick={logout}>🚪 {t('logout')}</button>
+              </>
             )}
           </div>
         </div>
@@ -35,7 +37,7 @@ const Layout = () => {
 
       <div className="app-body">
         <Sidebar onShowSupport={() => setShowSupportModal(true)} />
-        <main className="main-content p-4">
+        <main className="main-content">
           <Outlet />
         </main>
         <SupportModal show={showSupportModal} onClose={() => setShowSupportModal(false)} />
