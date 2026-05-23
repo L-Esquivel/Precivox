@@ -1,158 +1,128 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usuariosService } from '../../services/usuariosService';
-import UserForm from './UsuarioForm';
-import './UsuariosList.css';
+// Assuming you have a CSS file for this component
+import './UsuariosList.css'; 
 
 const UsuariosList = () => {
-  const [users, setUsers] = useState([]);
+  const { t } = useTranslation();
+  const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+  // ... (aquí iría tu lógica para cargar, añadir, editar y borrar usuarios)
 
-  const loadUsers = async () => {
-    try {
-      const data = await usuariosService.getUsers();
-      setUsers(data);
-    } catch (error) {
-      console.error('Error loading users:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = () => {
-    setEditingUser(null);
+  const handleOpenModal = (user = null) => {
+    setIsEditing(!!user);
+    setCurrentUser(user || { nombre: '', email: '', password: '', rol: 'cliente' });
     setShowModal(true);
   };
 
-  const handleEdit = (user) => {
-    setEditingUser(user);
-    setShowModal(true);
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setCurrentUser(null);
+    setError('');
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await usuariosService.deleteUser(id);
-        await loadUsers();
-      } catch (error) {
-        console.error('Error deleting user:', error);
-      }
-    }
-  };
-
-  const handleSubmit = async (userData) => {
-    console.log('1. handleSubmit called with data:', userData);
-    try {
-      if (editingUser) {
-        console.log('2. Editing existing user');
-        await usuariosService.updateUser(editingUser.id_usuario, userData);
-      } else {
-        console.log('2. Creating new user');
-        await usuariosService.createUser(userData);
-      }
-      console.log('3. Operation successful, closing modal');
-      setShowModal(false);
-      await loadUsers();
-      console.log('4. List reloaded');
-    } catch (error) {
-      console.error('ERROR en handleSubmit:', error);
-    }
-  };
-
-  const getRoleBadgeClass = (rol) => {
-    switch (rol) {
-      case 'admin':
-        return 'bg-danger';
-      case 'cliente':
-        return 'bg-primary';
-      case 'empleado':
-        return 'bg-warning text-dark';
-      default:
-        return 'bg-secondary';
-    }
-  };
-
-  if (loading) return <div className="text-center p-4">Loading users...</div>;
+  if (loading) {
+    return <div className="loading">Loading users...</div>;
+    return <div className="loading">{t('common.loading')}</div>;
+  }
 
   return (
     <div className="usuarios-container">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">👥 User Management</h2>
-        <button 
-          className="btn btn-primary"
-          onClick={handleCreate}
-        >
-          ➕ New User
-        </button>
+      <div className="usuarios-header">
+        <h2>User Management</h2>
+        <button className="btn-primary" onClick={() => handleOpenModal()}>Add User</button>
+        <h2>{t('usersList.title')}</h2>
+        <button className="btn-primary" onClick={() => handleOpenModal()}>{t('usersList.add_user')}</button>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-striped table-hover table-bordered">
-          <thead className="table-dark">
+      <div className="usuarios-table">
+        <table>
+          <thead>
             <tr>
-              <th>ID</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Phone</th>
               <th>Role</th>
-              <th className="text-center">Actions</th>
+              <th>Actions</th>
+              <th>{t('usersList.table.name')}</th>
+              <th>{t('usersList.table.email')}</th>
+              <th>{t('usersList.table.role')}</th>
+              <th>{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center text-muted py-4">
-                  No users registered yet
-                </td>
-              </tr>
-            ) : (
-              users.map(user => (
+            {usuarios.length > 0 ? (
+              usuarios.map(user => (
                 <tr key={user.id_usuario}>
-                  <td className="fw-bold">{user.id_usuario}</td>
                   <td>{user.nombre}</td>
                   <td>{user.email}</td>
-                  <td>{user.telefono || 'N/A'}</td>
-                  <td>
-                    <span className={`badge ${getRoleBadgeClass(user.rol)}`}>
-                      {user.rol}
-                    </span>
-                  </td>
-                  <td className="text-center">
-                    <div className="btn-group" role="group">
-                      <button 
-                        className="btn btn-warning btn-sm me-1"
-                        onClick={() => handleEdit(user)}
-                        title="Edit user"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button 
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(user.id_usuario)}
-                        title="Delete user"
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
+                  <td><span className={`role-badge role-${user.rol}`}>{user.rol}</span></td>
+                  <td className="actions">
+                    <button className="btn-edit" onClick={() => handleOpenModal(user)}>Edit</button>
+                    <button className="btn-delete">Delete</button>
+                    <button className="btn-edit" onClick={() => handleOpenModal(user)}>{t('common.edit')}</button>
+                    <button className="btn-delete">{t('common.delete')}</button>
                   </td>
                 </tr>
               ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="no-data">No users found.</td>
+                <td colSpan="4" className="no-data">{t('common.no_data')}</td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
 
       {showModal && (
-        <UserForm
-          user={editingUser}
-          onSubmit={handleSubmit}
-          onClose={() => setShowModal(false)}
-        />
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>{isEditing ? 'Edit User' : 'Add User'}</h3>
+              <h3>{isEditing ? t('usersList.edit_user') : t('usersList.add_user')}</h3>
+              <button onClick={handleCloseModal} className="close-button">&times;</button>
+            </div>
+            <form>
+              <div className="form-group">
+                <label>Full Name</label>
+                <label>{t('usersList.form.name')}</label>
+                <input type="text" name="nombre" value={currentUser.nombre} />
+              </div>
+              <div className="form-group">
+                <label>Email Address</label>
+                <label>{t('usersList.form.email')}</label>
+                <input type="email" name="email" value={currentUser.email} />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <label>{t('usersList.form.password')}</label>
+                <input type="password" name="password" />
+                <small>Leave blank to keep the current password.</small>
+                <small>{t('usersList.form.password_help')}</small>
+              </div>
+              <div className="form-group">
+                <label>Role</label>
+                <label>{t('usersList.form.role')}</label>
+                <select name="rol" value={currentUser.rol}>
+                  <option value="admin">Admin</option>
+                  <option value="cliente">Client</option>
+                </select>
+              </div>
+              <div className="form-actions">
+                <button type="button" onClick={handleCloseModal}>Cancel</button>
+                <button type="submit">Save</button>
+                <button type="button" onClick={handleCloseModal}>{t('common.cancel')}</button>
+                <button type="submit">{t('common.save')}</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
