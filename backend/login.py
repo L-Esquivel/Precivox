@@ -99,13 +99,26 @@ def login():
     if user and user.check_password(password):
         login_user(user)
         register_log(f"Logged in: {email}")
+
+        # Fetch tenant_slug to include in the login response, making it consistent with /auth/me
+        conn = get_db()
+        tenant_slug = None
+        try:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                cursor.execute("SELECT slug FROM tenants WHERE id_tenant = %s", (user.tenant_id,))
+                tenant_row = cursor.fetchone()
+                if tenant_row:
+                    tenant_slug = tenant_row['slug']
+        except Exception as e:
+            current_app.logger.error(f"Could not fetch tenant slug during login for tenant_id {user.tenant_id}: {e}")
+
         return jsonify({
             "message": "Login successful",
             "usuario": {
                 "id": user.id, "nombre": user.nombre, 
                 "email": user.email, "rol": user.rol,
-                # 💡 IMPROVEMENT: Return the complete module configuration.
-                "module_settings": user.module_settings 
+                "tenant_slug": tenant_slug,
+                "module_settings": user.module_settings
             }
         })
     
