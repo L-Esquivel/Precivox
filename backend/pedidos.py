@@ -17,7 +17,7 @@ def process_stock_deduction(cursor, order_id, tenant_id):
     try:
         # This function is called from another that already handles commit/rollback,
         # so we don't commit here to maintain atomicity.
-        cursor.execute("SELECT producto_id, cantidad FROM detalle_pedidos WHERE pedido_id = %s AND tenant_id = %s", (pedido_id, tenant_id))
+        cursor.execute("SELECT producto_id, cantidad FROM detalle_pedidos WHERE pedido_id = %s AND tenant_id = %s", (order_id, tenant_id))
         items = cursor.fetchall()
         for item in items:
             cursor.execute("""
