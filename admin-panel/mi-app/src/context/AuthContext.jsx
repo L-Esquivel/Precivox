@@ -21,9 +21,10 @@ export const AuthProvider = ({ children }) => {
     const checkUserSession = async () => {
       try {
         // Assuming authAPI.me() calls the /auth/me endpoint
-        const data = await authAPI.me(); 
-        if (data.usuario && data.usuario.rol !== 'cliente') {
-          setUser(data.usuario);
+        const response = await authAPI.me();
+        const data = response.data; // The actual payload from the server
+        if (data && data.usuario && data.usuario.rol !== 'cliente') {
+          setUser(data.usuario); // Set the user state with the payload
         } else {
           // If the user is a customer or data is invalid, clear the session
           setUser(null);
@@ -43,14 +44,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const data = await authAPI.login(email, password);
+      const response = await authAPI.login(email, password);
+      const data = response.data; // The actual payload from the server
 
       // Security check: only admin or superadmin can log into the panel
-      if (data.usuario.rol === 'cliente') {
+      if (data && data.usuario && data.usuario.rol === 'cliente') {
         throw new Error('Access to the admin panel is denied for this user role.');
       }
 
-      setUser(data.usuario);
+      setUser(data.usuario); // Set the user state with the payload
       return { success: true };
     } catch (error) {
       // Ensure user state is null on a failed login attempt
