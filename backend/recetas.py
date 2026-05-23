@@ -244,7 +244,7 @@ def add_recipe_ingredient():
                 return jsonify({"error": "Ingrediente no encontrado"}), 404
             
             costo_unitario = float(ingrediente.get('costo_por_unidad') or 0)
-            costo_ingrediente = costo_unitario * float(cantidad_necesaria)
+            costo_ingrediente = costo_unitario * float(quantity_needed)
 
             cursor.execute("""
                 INSERT INTO recetas_ingredientes (id_producto, id_ingrediente, cantidad_necesaria, costo_ingrediente, tenant_id)
