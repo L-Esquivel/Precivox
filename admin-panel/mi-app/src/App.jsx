@@ -7,8 +7,8 @@ import ProductosList from './components/productos/ProductosList';
 import PedidosList from './components/pedidos/PedidosList';
 import InsumosPage from "./components/Insumos/InsumosPage";
 import RecetasList from "./components/recetas/RecetasList";
-// Corrected path to match the file structure (components/dashboard/dashboard.jsx)
-import Dashboard from './components/dashboard/dashboard';
+// Corrected path to use PascalCase for the component, which is a standard convention.
+import Dashboard from './components/dashboard/Dashboard';
 import GastosList from './components/gastos/GastosList';
 import MermaList from './components/merma/MermaList';
 import TenantsList from './components/tenants/TenantsList';
