@@ -344,7 +344,7 @@ def get_order_details_admin(id):
     try:
         # This route is now redundant with /detalle_pedidos/pedido/<id>, but we keep it for backward compatibility.
         cursor.execute("""
-            SELECT dp.*, p.nombre as producto_nombre 
+            SELECT dp.*, p.nombre as producto_nombre, p.categoria 
             FROM detalle_pedidos dp JOIN productos p ON dp.producto_id = p.id_producto
             WHERE dp.pedido_id = %s AND dp.tenant_id = %s
         """, (id, tenant_id))

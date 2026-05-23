@@ -387,7 +387,7 @@ const PedidosList = () => {
                         </thead>
                         <tbody>
                           {orderDetails.map(detail => (
-                            <tr key={detail.id}>
+                            <tr key={detail.id_detalle_pedido}>
                               <td>
                                 <div className="fw-semibold">{detail.producto_nombre}</div>
                                 <small className="text-muted">{detail.categoria}</small>
