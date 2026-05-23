@@ -4,6 +4,7 @@ import { storefrontAPI } from '../../services/storefrontAPI';
 import { Spinner, Button } from 'react-bootstrap';
 import AddSectionModal from './AddSectionModal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import SectionEditor from './SectionEditor';
 
 const StorefrontSettings = () => {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ const StorefrontSettings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingSection, setEditingSection] = useState(null);
 
   // Store the original sections order to revert on API error
   useEffect(() => {
@@ -66,6 +68,15 @@ const StorefrontSettings = () => {
         console.error("Failed to delete section", err);
       }
     }
+  };
+
+  const handleSaveSection = (updatedSection) => {
+    // Update the section in the local state
+    setSections(prev =>
+      prev.map(s => (s.id === updatedSection.id ? updatedSection : s))
+    );
+    // Close the editor
+    setEditingSection(null);
   };
 
   const onDragEnd = async (result) => {
@@ -128,6 +139,9 @@ const StorefrontSettings = () => {
                       </div>
                       <div>
                         <span className={`badge me-3 bg-${section.is_visible ? 'success' : 'secondary'}`}>{section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}</span>
+                        <Button variant="outline-secondary" size="sm" className="me-2" onClick={() => setEditingSection(section)}>
+                          {t('common.edit', 'Edit')}
+                        </Button>
                         <Button variant="outline-danger" size="sm" onClick={() => handleDeleteSection(section.id)}>{t('common.delete', 'Delete')}</Button>
                       </div>
                     </li>
@@ -143,25 +157,34 @@ const StorefrontSettings = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <div className="card shadow-sm">
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <h3 className="mb-0">{t('storefront.settings.title', 'Storefront Settings')}</h3>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
-            {t('storefront.settings.addSection', 'Add Section')}
-          </button>
+    <div className="d-flex" style={{ height: 'calc(100vh - 56px)' /* Adjust based on your navbar height */ }}>
+      <div className="flex-grow-1 p-4 overflow-auto">
+        <div className="card shadow-sm">
+          <div className="card-header d-flex justify-content-between align-items-center">
+            <h3 className="mb-0">{t('storefront.settings.title', 'Storefront Settings')}</h3>
+            <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+              {t('storefront.settings.addSection', 'Add Section')}
+            </button>
+          </div>
+          <div className="card-body">
+            <p className="text-muted">{t('storefront.settings.description', 'Manage your public landing page sections and appearance here.')}</p>
+            {renderContent()}
+          </div>
         </div>
-        <div className="card-body">
-          <p className="text-muted">{t('storefront.settings.description', 'Manage your public landing page sections and appearance here.')}</p>
-          {renderContent()}
-        </div>
-      </div>
 
-      <AddSectionModal
-        show={showAddModal}
-        onHide={() => setShowAddModal(false)}
-        onConfirm={handleCreateSection}
-      />
+        <AddSectionModal
+          show={showAddModal}
+          onHide={() => setShowAddModal(false)}
+          onConfirm={handleCreateSection}
+        />
+      </div>
+      {editingSection && (
+        <SectionEditor
+          section={editingSection}
+          onClose={() => setEditingSection(null)}
+          onSave={handleSaveSection}
+        />
+      )}
     </div>
   );
 };

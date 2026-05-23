@@ -388,5 +388,10 @@
   "storefront.section_types.gallery": "Galería de Imágenes",
   "storefront.section_types.about_us": "Sobre Nosotros",
   "storefront.section_types.contact_form": "Formulario de Contacto",
-  "storefront.errors.reorder_section": "Error al guardar el nuevo orden. Revirtiendo cambios."
+  "storefront.errors.reorder_section": "Error al guardar el nuevo orden. Revirtiendo cambios.",
+  "storefront.editor.title": "Editar Sección",
+  "storefront.editor.save_error": "Error al guardar los cambios.",
+  "storefront.editor.no_fields": "Este tipo de sección aún no tiene campos editables.",
+  "storefront.editor.hero.title": "Título",
+  "storefront.editor.hero.subtitle": "Subtítulo"
 }

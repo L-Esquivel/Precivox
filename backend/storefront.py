@@ -206,3 +206,43 @@ def reorder_storefront_sections():
         conn.rollback()
         current_app.logger.error(f"Error reordering storefront sections for tenant {tenant_id}: {e}")
         return jsonify({"error": "An internal error occurred while reordering sections."}), 500
+
+@storefront_bp.route("/sections/<int:section_id>", methods=["PUT"])
+@admin_required
+def update_storefront_section(section_id):
+    """
+    Updates a specific storefront section (e.g., its content or visibility).
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided for update"}), 400
+
+    tenant_id = current_user.tenant_id
+    conn = get_db()
+
+    # Define allowed fields to update
+    allowed_fields = ['content', 'is_visible']
+    
+    set_clauses = []
+    values = []
+
+    for field in allowed_fields:
+        if field in data:
+            set_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(field)))
+            values.append(data[field] if field != 'content' else json.dumps(data[field]))
+
+    if not set_clauses:
+        return jsonify({"error": "No valid fields to update"}), 400
+
+    values.extend([section_id, tenant_id])
+
+    try:
+        with conn.cursor() as cursor:
+            query = sql.SQL("UPDATE storefront_sections SET {} WHERE id = %s AND tenant_id = %s").format(sql.SQL(', ').join(set_clauses))
+            cursor.execute(query, tuple(values))
+            conn.commit()
+            return jsonify({"message": "Section updated successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Error updating storefront section {section_id} for tenant {tenant_id}: {e}")
+        return jsonify({"error": "An internal error occurred while updating the section."}), 500

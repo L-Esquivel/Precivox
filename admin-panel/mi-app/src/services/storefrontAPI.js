@@ -20,4 +20,8 @@ export const storefrontAPI = {
     const response = await api.put('/api/tenant/storefront/sections/reorder', { ordered_ids: orderedIds });
     return response.data;
   },
+  updateSection: async (sectionId, updateData) => {
+    const response = await api.put(`/api/tenant/storefront/sections/${sectionId}`, updateData);
+    return response.data;
+  },
 };
