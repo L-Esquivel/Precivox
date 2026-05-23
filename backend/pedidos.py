@@ -180,7 +180,7 @@ def create_order_admin():
             order_total = 0
             products_to_insert = []
             for item in items:
-                producto_id = item.get("producto_id")
+                producto_id = item.get("id_producto")
                 cantidad = item.get("cantidad")
                 if not producto_id or not cantidad or int(cantidad) <= 0:
                     continue # Ignore invalid items
