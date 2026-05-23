@@ -281,27 +281,34 @@ def update_order_admin(id):
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             # 1. Recalculate total on the backend for security
-            new_total = 0
+            new_total = 0.0
+            products_to_insert = []
             for item in items:
                 cursor.execute("SELECT precio FROM productos WHERE id_producto = %s AND tenant_id = %s", (item.get("id_producto"), tenant_id))
                 producto_data = cursor.fetchone()
                 if not producto_data:
                     raise ValueError(f"Product with ID {item.get('id_producto')} not found.")
                 
-                precio_unitario = float(producto_data['precio'] or 0)
-                new_total += precio_unitario * int(item.get("cantidad"))
+                precio_unitario_db = float(producto_data['precio'] or 0)
+                cantidad = int(item.get("cantidad"))
+                subtotal = precio_unitario_db * cantidad
+                new_total += subtotal
+                products_to_insert.append({
+                    "id_producto": item.get("id_producto"),
+                    "cantidad": cantidad,
+                    "precio_unitario": precio_unitario_db,
+                    "subtotal": subtotal
+                })
 
             # 2. Delete old order details
             cursor.execute("DELETE FROM detalle_pedidos WHERE pedido_id = %s AND tenant_id = %s", (id, tenant_id))
 
             # 3. Insert new order details
-            for item in items:
-                precio_unitario = next((p['precio'] for p in [producto_data] if p['id_producto'] == item.get("id_producto")), 0) # Simplified for example
-                subtotal = float(item.get("precio_unitario")) * int(item.get("cantidad"))
+            for prod in products_to_insert:
                 cursor.execute("""
                     INSERT INTO detalle_pedidos (pedido_id, producto_id, cantidad, precio_unitario, subtotal, tenant_id) 
                     VALUES (%s, %s, %s, %s, %s, %s)
-                """, (id, item['id_producto'], item['cantidad'], item['precio_unitario'], subtotal, tenant_id))
+                """, (id, prod['id_producto'], prod['cantidad'], prod['precio_unitario'], prod['subtotal'], tenant_id))
 
             # 4. Update the main order's total
             cursor.execute("UPDATE pedidos SET total = %s WHERE id_pedido = %s AND tenant_id = %s", (new_total, id, tenant_id))
