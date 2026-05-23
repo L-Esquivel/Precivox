@@ -2,9 +2,9 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Import translation files
-import translationEN from './locales/en/translation.json';
-import translationES from './locales/es/translation.json';
+// Import translation files using import assertions for better compatibility with strict build environments.
+import translationEN from './locales/en/translation.json' assert { type: 'json' };
+import translationES from './locales/es/translation.json' assert { type: 'json' };
 
 // The translations
 const resources = {
