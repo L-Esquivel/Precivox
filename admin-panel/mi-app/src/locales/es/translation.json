@@ -393,5 +393,6 @@
   "storefront.editor.save_error": "Error al guardar los cambios.",
   "storefront.editor.no_fields": "Este tipo de sección aún no tiene campos editables.",
   "storefront.editor.hero.title": "Título",
-  "storefront.editor.hero.subtitle": "Subtítulo"
+  "storefront.editor.hero.subtitle": "Subtítulo",
+  "storefront.errors.update_visibility": "Error al actualizar la visibilidad. Revirtiendo cambio."
 }

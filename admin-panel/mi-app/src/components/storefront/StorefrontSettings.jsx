@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../services/storefrontAPI';
-import { Spinner, Button } from 'react-bootstrap';
+import { Spinner, Button, Form } from 'react-bootstrap';
 import AddSectionModal from './AddSectionModal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionEditor from './SectionEditor';
@@ -79,6 +79,25 @@ const StorefrontSettings = () => {
     setEditingSection(null);
   };
 
+  const handleToggleVisibility = async (section) => {
+    const originalSections = [...sections];
+    const updatedSection = { ...section, is_visible: !section.is_visible };
+
+    // Optimistic UI update for a snappy feel
+    setSections(prev =>
+      prev.map(s => (s.id === section.id ? updatedSection : s))
+    );
+
+    try {
+      await storefrontAPI.updateSection(section.id, { is_visible: updatedSection.is_visible });
+    } catch (err) {
+      setError(t('storefront.errors.update_visibility', 'Failed to update visibility. Reverting.'));
+      // Revert to original state on error
+      setSections(originalSections);
+      console.error("Failed to update visibility", err);
+    }
+  };
+
   const onDragEnd = async (result) => {
     const { destination, source } = result;
 
@@ -138,11 +157,18 @@ const StorefrontSettings = () => {
                         <h5 className="mb-0 text-capitalize">{section.section_type.replace('_', ' ')}</h5>
                       </div>
                       <div>
-                        <span className={`badge me-3 bg-${section.is_visible ? 'success' : 'secondary'}`}>{section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}</span>
-                        <Button variant="outline-secondary" size="sm" className="me-2" onClick={() => setEditingSection(section)}>
+                        <Form.Check
+                          type="switch"
+                          id={`visibility-switch-${section.id}`}
+                          checked={section.is_visible}
+                          onChange={() => handleToggleVisibility(section)}
+                          className="d-inline-block me-3"
+                          title={section.is_visible ? t('common.visible', 'Visible') : t('common.hidden', 'Hidden')}
+                        />
+                        <Button variant="outline-secondary" size="sm" className="me-2" onClick={() => setEditingSection(section)} title={t('common.edit', 'Edit')}>
                           {t('common.edit', 'Edit')}
                         </Button>
-                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteSection(section.id)}>{t('common.delete', 'Delete')}</Button>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteSection(section.id)} title={t('common.delete', 'Delete')}>{t('common.delete', 'Delete')}</Button>
                       </div>
                     </li>
                   )}
