@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { recetasService } from '../../services/recetasService';
 import { productosService } from '../../services/productosService';
 import { ingredientesService } from '../../services/ingredientesService';
 import { empaquesService } from '../../services/empaquesService';
 import RecetaForm from './RecetaForm';
+import { formatCurrency } from '../../utils/formatters';
 import './RecetasList.css';
 
 const RecetasList = () => {
+  const { t, i18n } = useTranslation();
   const [products, setProducts] = useState([]);
   const [ingredients, setIngredients] = useState([]);
   const [packagingCatalog, setPackagingCatalog] = useState([]);
@@ -53,7 +56,7 @@ const RecetasList = () => {
       setCosts(data.costs || null);
     } catch (error) {
       console.error('Error loading product recipes:', error);
-      setError('Failed to load recipe and cost data. Please check the connection and try again.');
+      setError(t('recipes.error_load_details'));
       setCosts(null); // Ensure costs are cleared on error
     }
   };
@@ -88,7 +91,7 @@ const RecetasList = () => {
   };
 
   const handleDeleteRecipe = async (recipeId) => {
-    if (window.confirm('Delete this ingredient?')) {
+    if (window.confirm(t('recipes.delete_ingredient_confirm'))) {
       try {
         await recetasService.deleteRecipeIngredient(recipeId);
         fetchProductRecipes(selectedProduct.id_producto);
@@ -97,7 +100,7 @@ const RecetasList = () => {
   };
 
   const handleDeletePackaging = async (id) => {
-    if (window.confirm('Delete this packaging?')) {
+    if (window.confirm(t('recipes.delete_packaging_confirm'))) {
       try {
         await empaquesService.deletePackagingFromProduct(id);
         fetchProductRecipes(selectedProduct.id_producto);
@@ -106,7 +109,7 @@ const RecetasList = () => {
   };
 
   const handleCreateRecipeItem = () => {
-    if (!selectedProduct) return alert('Select a product first');
+    if (!selectedProduct) return alert(t('recipes.select_product_first'));
     setShowModal(true);
   };
 
@@ -122,19 +125,15 @@ const RecetasList = () => {
     } catch (error) { console.error('Error saving:', error); }
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value || 0);
-  };
-
-  if (loading) return <div className="text-center p-5"><h3>Loading costing system...</h3></div>;
+  if (loading) return <div className="text-center p-5"><h3>{t('recipes.loading')}</h3></div>;
 
   return (
     <div className="recetas-container container-fluid p-4">
-      <h2 className="mb-4 text-center">📋 Costing & Recipe Analysis</h2>
+      <h2 className="mb-4 text-center">📋 {t('recipes.title')}</h2>
 
       <div className="card shadow-sm mb-4">
         <div className="card-body bg-light">
-          <label className="form-label fw-bold">Select Product for Costing:</label>
+          <label className="form-label fw-bold">{t('recipes.select_product')}</label>
           <select 
             className="form-select form-select-lg"
             value={selectedProduct?.id_producto || ''}
@@ -149,7 +148,7 @@ const RecetasList = () => {
               }
             }}
           >
-            <option value="">-- Select a product from the catalog --</option>
+            <option value="">{t('recipes.select_product_placeholder')}</option>
             {products.map(p => (
               <option key={p.id_producto} value={p.id_producto}>{p.nombre}</option>
             ))}
@@ -165,14 +164,14 @@ const RecetasList = () => {
           <div className="col-lg-5">
             <div className="card shadow-sm border-0 mb-4">
               <div className="card-header bg-dark text-white">
-                <h5 className="mb-0">⚙️ Sale Parameters</h5>
+                <h5 className="mb-0">⚙️ {t('recipes.parameters_title')}</h5>
               </div>
               <div className="card-body">
                 <h4 className="text-primary">{selectedProduct.nombre}</h4>
                 <hr />
                 
                 <div className="mb-4">
-                  <label className="form-label fw-bold">PAX (Units per recipe):</label>
+                  <label className="form-label fw-bold">{t('recipes.pax_label')}</label>
                   <div className="input-group">
                     <span className="input-group-text">📦</span>
                     <input 
@@ -186,11 +185,11 @@ const RecetasList = () => {
                       onChange={(e) => updateProductField('pax', e.target.value)}
                     />
                   </div>
-                  <small className="text-muted">The final price will be divided by this number.</small>
+                  <small className="text-muted">{t('recipes.pax_help')}</small>
                 </div>
 
                 <div className="mb-4">
-                  <label className="form-label fw-bold">Desired Profit (%):</label>
+                  <label className="form-label fw-bold">{t('recipes.profit_label')}</label>
                   <div className="input-group">
                     <input 
                       type="number"
@@ -200,10 +199,10 @@ const RecetasList = () => {
                     />
                     <span className="input-group-text">%</span>
                   </div>
-                  <small className="text-muted">Percentage of profit over the total production cost.</small>
+                  <small className="text-muted">{t('recipes.profit_help')}</small>
                 </div>
 
-                {isUpdating && <div className="text-primary"><span className="spinner-border spinner-border-sm me-2"></span>Recalculating...</div>}
+                {isUpdating && <div className="text-primary"><span className="spinner-border spinner-border-sm me-2"></span>{t('recipes.recalculating')}</div>}
               </div>
             </div>
           </div>
@@ -212,57 +211,57 @@ const RecetasList = () => {
           <div className="col-lg-7">
             <div className="card shadow-sm border-0">
               <div className="card-header bg-success text-white">
-                <h5 className="mb-0">💰 Detailed Price Breakdown</h5>
+                <h5 className="mb-0">💰 {t('recipes.breakdown_title')}</h5>
               </div>
               <div className="card-body p-0">
                 <table className="table table-hover mb-0">
                   <tbody>
                     <tr>
-                      <td className="ps-4">Base Cost (Ingredients)</td>
-                      <td className="text-end pe-4 fw-bold">{formatCurrency(costs.base_cost)}</td>
+                      <td className="ps-4">{t('recipes.base_cost')}</td>
+                      <td className="text-end pe-4 fw-bold">{formatCurrency(costs.base_cost, i18n)}</td>
                     </tr>
                     <tr className="table-light">
-                      <td className="ps-4 text-muted small">+ 35% Operational Expenses</td>
-                      <td className="text-end pe-4">{formatCurrency(costs.operational_expenses)}</td>
+                      <td className="ps-4 text-muted small">{t('recipes.op_expenses')}</td>
+                      <td className="text-end pe-4">{formatCurrency(costs.operational_expenses, i18n)}</td>
                     </tr>
                     <tr className="table-light">
-                      <td className="ps-4 text-muted small">+ 10% Market Depreciation</td>
-                      <td className="text-end pe-4">{formatCurrency(costs.market_depreciation)}</td>
+                      <td className="ps-4 text-muted small">{t('recipes.market_depreciation')}</td>
+                      <td className="text-end pe-4">{formatCurrency(costs.market_depreciation, i18n)}</td>
                     </tr>
                     <tr className="table-light border-bottom">
-                      <td className="ps-4 text-muted small">+ 5% Equipment Depreciation</td>
-                      <td className="text-end pe-4">{formatCurrency(costs.equipment_depreciation)}</td>
+                      <td className="ps-4 text-muted small">{t('recipes.equipment_depreciation')}</td>
+                      <td className="text-end pe-4">{formatCurrency(costs.equipment_depreciation, i18n)}</td>
                     </tr>
                     <tr>
-                      <td className="ps-4">+ Total Packaging Value</td>
-                      <td className="text-end pe-4">{formatCurrency(costs.packaging_cost)}</td>
+                      <td className="ps-4">{t('recipes.packaging_cost')}</td>
+                      <td className="text-end pe-4">{formatCurrency(costs.packaging_cost, i18n)}</td>
                     </tr>
                     <tr className="fw-bold bg-light">
-                      <td className="ps-4 text-primary">TOTAL BEFORE PROFIT</td>
-                      <td className="text-end pe-4 text-primary">{formatCurrency(costs.production_cost)}</td>
+                      <td className="ps-4 text-primary">{t('recipes.total_before_profit')}</td>
+                      <td className="text-end pe-4 text-primary">{formatCurrency(costs.production_cost, i18n)}</td>
                     </tr>
                     <tr>
-                      <td className="ps-4">{costs.profit_percentage}% Selected Profit</td>
-                      <td className="text-end pe-4 text-success">+ {formatCurrency(costs.profit)}</td>
+                      <td className="ps-4">{t('recipes.selected_profit', { percent: costs.profit_percentage })}</td>
+                      <td className="text-end pe-4 text-success">+ {formatCurrency(costs.profit, i18n)}</td>
                     </tr>
                     <tr className="fw-bold">
-                      <td className="ps-4">TOTAL WITH PROFIT</td>
-                      <td className="text-end pe-4">{formatCurrency(costs.pre_tax_total)}</td>
+                      <td className="ps-4">{t('recipes.total_with_profit')}</td>
+                      <td className="text-end pe-4">{formatCurrency(costs.pre_tax_total, i18n)}</td>
                     </tr>
                     <tr>
-                      <td className="ps-4">8% Consumption Tax (I.C.)</td>
-                      <td className="text-end pe-4">{formatCurrency(costs.consumption_tax)}</td>
+                      <td className="ps-4">{t('recipes.consumption_tax')}</td>
+                      <td className="text-end pe-4">{formatCurrency(costs.consumption_tax, i18n)}</td>
                     </tr>
                     <tr className="table-dark">
-                      <td className="ps-4 fs-5 py-3 fw-bold">FINAL SUGGESTED PRICE (per unit)</td>
-                      <td className="text-end pe-4 fs-5 py-3 fw-bold text-warning">{formatCurrency(costs.suggested_price)}</td>
+                      <td className="ps-4 fs-5 py-3 fw-bold">{t('recipes.suggested_price')}</td>
+                      <td className="text-end pe-4 fs-5 py-3 fw-bold text-warning">{formatCurrency(costs.suggested_price, i18n)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div className="card-footer text-center bg-white border-0 py-3">
                 <button className="btn btn-outline-primary btn-lg" onClick={handleCreateRecipeItem}>
-                  ➕ Add Ingredient or Packaging
+                  ➕ {t('recipes.add_ingredient_or_packaging')}
                 </button>
               </div>
             </div>
@@ -275,10 +274,10 @@ const RecetasList = () => {
         <div className="row mt-4">
             <div className="col-md-6">
                 <div className="card shadow-sm">
-                    <div className="card-header bg-secondary text-white">Ingredients</div>
+                    <div className="card-header bg-secondary text-white">{t('recipes.ingredients_title')}</div>
                     <div className="table-responsive">
                         <table className="table table-sm mb-0">
-                            <thead><tr><th>Item</th><th>Qty.</th><th>Subtotal</th><th></th></tr></thead>
+                            <thead><tr><th>{t('recipes.table.item')}</th><th>{t('recipes.table.qty')}</th><th>{t('recipes.table.subtotal')}</th><th></th></tr></thead>
                             <tbody>
                                 {productRecipes.map((r) => (
                                     // FIX: Use the unique record ID as key and for the delete function.
@@ -286,7 +285,7 @@ const RecetasList = () => {
                                     <tr key={r.id}>
                                         <td>{r.ingrediente}</td>
                                         <td>{r.cantidad_necesaria} {r.unidad_medida}</td>
-                                        <td className="fw-bold">{formatCurrency(r.costo_ingrediente)}</td>
+                                        <td className="fw-bold">{formatCurrency(r.costo_ingrediente, i18n)}</td>
                                         <td><button className="btn btn-link btn-sm text-danger" onClick={() => handleDeleteRecipe(r.id)}>🗑️</button></td>
                                     </tr>
                                 ))}
@@ -297,16 +296,16 @@ const RecetasList = () => {
             </div>
             <div className="col-md-6">
                 <div className="card shadow-sm">
-                    <div className="card-header bg-secondary text-white">Packaging</div>
+                    <div className="card-header bg-secondary text-white">{t('recipes.packaging_title')}</div>
                     <div className="table-responsive">
                         <table className="table table-sm mb-0">
-                            <thead><tr><th>Item</th><th>Qty.</th><th>Subtotal</th><th></th></tr></thead>
+                            <thead><tr><th>{t('recipes.table.item')}</th><th>{t('recipes.table.qty')}</th><th>{t('recipes.table.subtotal')}</th><th></th></tr></thead>
                             <tbody>
                                 {productPackaging.map((e, i) => (
                                     <tr key={i}>
                                         <td>{e.nombre}</td>
                                         <td>{e.cantidad}</td>
-                                        <td className="fw-bold">{formatCurrency(e.subtotal)}</td>
+                                        <td className="fw-bold">{formatCurrency(e.subtotal, i18n)}</td>
                                         <td><button className="btn btn-link btn-sm text-danger" onClick={() => handleDeletePackaging(e.id)}>🗑️</button></td>
                                     </tr>
                                 ))}
