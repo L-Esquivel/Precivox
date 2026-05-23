@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../services/storefrontAPI';
 import { Spinner, Button } from 'react-bootstrap';
 import AddSectionModal from './AddSectionModal';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const StorefrontSettings = () => {
   const { t } = useTranslation();
