@@ -53,3 +53,45 @@ def get_storefront_sections():
         current_app.logger.error(f"Error fetching storefront sections for tenant {tenant_id}: {e}")
         # Return a generic error to the client
         return jsonify({"error": "An internal error occurred while loading the storefront configuration."}), 500
+
+@storefront_bp.route("/sections", methods=["POST"])
+@admin_required
+def create_storefront_section():
+    """
+    Creates a new storefront section for the current tenant.
+    It automatically assigns the next available display_order.
+    """
+    data = request.get_json()
+    section_type = data.get("section_type")
+    if not section_type:
+        return jsonify({"error": "section_type is required"}), 400
+
+    tenant_id = current_user.tenant_id
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            # Determine the next display_order
+            cursor.execute(
+                "SELECT COALESCE(MAX(display_order), -1) as max_order FROM storefront_sections WHERE tenant_id = %s",
+                (tenant_id,)
+            )
+            new_order = cursor.fetchone()['max_order'] + 1
+
+            # Insert the new section with default empty content and make it visible
+            cursor.execute(
+                """
+                INSERT INTO storefront_sections (tenant_id, section_type, display_order, content, is_visible)
+                VALUES (%s, %s, %s, '{}'::jsonb, TRUE)
+                RETURNING *
+                """,
+                (tenant_id, section_type, new_order)
+            )
+            new_section_raw = cursor.fetchone()
+            conn.commit()
+
+            return jsonify(dict(new_section_raw)), 201
+
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Error creating storefront section for tenant {tenant_id}: {e}")
+        return jsonify({"error": "An internal error occurred while creating the section."}), 500

@@ -7,4 +7,9 @@ export const storefrontAPI = {
     return response.data;
   },
   // Future functions like createSection, updateSection, etc., will go here
+  createSection: async (sectionData) => {
+    // sectionData should be an object like { section_type: 'hero' }
+    const response = await api.post('/api/tenant/storefront/sections', sectionData);
+    return response.data;
+  },
 };

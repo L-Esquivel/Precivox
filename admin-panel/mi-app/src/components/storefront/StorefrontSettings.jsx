@@ -27,6 +27,20 @@ const StorefrontSettings = () => {
     fetchSections();
   }, [t]);
 
+  const handleAddSection = async () => {
+    // For now, we'll add a 'hero' section by default.
+    // In the future, this could open a modal to let the user choose the section type.
+    try {
+      // We can add a loading state for the button here in the future
+      const newSection = await storefrontAPI.createSection({ section_type: 'hero' });
+      // Add the new section to the local state to update the UI instantly
+      setSections(prevSections => [...prevSections, newSection]);
+    } catch (err) {
+      // In a real app, we would use a toast notification for a better UX
+      setError(t('storefront.errors.add_section', 'Failed to add the new section.'));
+      console.error("Failed to add section", err);
+    }
+  };
   const renderContent = () => {
     if (loading) {
       return <div className="text-center p-5"><Spinner animation="border" /></div>;
@@ -63,7 +77,7 @@ const StorefrontSettings = () => {
       <div className="card shadow-sm">
         <div className="card-header d-flex justify-content-between align-items-center">
           <h3 className="mb-0">{t('storefront.settings.title', 'Storefront Settings')}</h3>
-          <button className="btn btn-primary btn-sm">
+          <button className="btn btn-primary btn-sm" onClick={handleAddSection}>
             {t('storefront.settings.addSection', 'Add Section')}
           </button>
         </div>
