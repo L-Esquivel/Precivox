@@ -55,7 +55,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       // Ensure user state is null on a failed login attempt
       setUser(null);
-      return { success: false, error: error.message };
+      // Extract the specific error message from the API response if available,
+      // otherwise fall back to the generic error message.
+      const apiErrorMessage = error.response?.data?.error || error.message;
+      return { success: false, error: apiErrorMessage };
     } finally {
       setLoading(false);
     }

@@ -18,6 +18,8 @@
   "login.passwordPlaceholder": "Contraseña",
   "login.loading": "Cargando...",
   "login.serverError": "Error de conexión con el servidor",
+  "login.error.invalid_credentials": "Credenciales incorrectas. Por favor, verifica tu correo y contraseña.",
+  "login.error.role_denied": "Acceso denegado. Tu cuenta no tiene permisos para acceder a este panel.",
   "tenantDashboard.loading": "Cargando Dashboard...",
   "tenantDashboard.loadError": "No se pudieron cargar las estadísticas. Por favor, inténtalo de nuevo.",
   "tenantDashboard.dateError": "La fecha de inicio no puede ser posterior a la fecha de fin.",
