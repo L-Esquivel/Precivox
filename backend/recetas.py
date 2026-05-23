@@ -243,7 +243,7 @@ def add_recipe_ingredient():
             if not ingrediente:
                 return jsonify({"error": "Ingrediente no encontrado"}), 404
             
-            costo_unitario = float(ingrediente['costo_por_unidad'])
+            costo_unitario = float(ingrediente.get('costo_por_unidad') or 0)
             costo_ingrediente = costo_unitario * float(cantidad_necesaria)
 
             cursor.execute("""
@@ -281,7 +281,7 @@ def add_multiple_recipe_ingredients():
                 ing_data = cursor.fetchone()
                 if not ing_data: continue # Opcional: manejar error si un ingrediente no existe
 
-                costo_unitario = float(ing_data['costo_por_unidad'])
+                costo_unitario = float(ing_data.get('costo_por_unidad') or 0)
                 costo_ingrediente = costo_unitario * float(quantity_needed)
 
                 cursor.execute("""
@@ -312,7 +312,7 @@ def update_recipe_ingredient(id):
             ing_data = cursor.fetchone()
             if not ing_data: return jsonify({"error": "Ingrediente no encontrado"}), 404
 
-            costo_unitario = float(ing_data['costo_por_unidad'])
+            costo_unitario = float(ing_data.get('costo_por_unidad') or 0)
             costo_ingrediente = costo_unitario * float(quantity_needed)
 
             cursor.execute("""

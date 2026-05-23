@@ -106,7 +106,7 @@ export const recetasService = {
 
   async deleteRecipeIngredient(recipeId) {
     try {
-      const response = await fetch(`${API_URL}/${recetaId}`, {
+      const response = await fetch(`${API_URL}/${recipeId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
