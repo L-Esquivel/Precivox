@@ -364,5 +364,8 @@
   "waste.error_create": "Error al crear el registro de merma: {message}",
   "waste.error_delete": "Error al eliminar el registro.",
   "waste.delete_confirm": "¿Eliminar este registro de merma?",
-  "waste.success_create": "Registro de merma creado exitosamente."
+  "waste.success_create": "Registro de merma creado exitosamente.",
+  "storefront.settings.title": "Configuración de la Tienda Pública",
+  "storefront.settings.description": "Administra las secciones y la apariencia de tu página pública aquí.",
+  "storefront.settings.comingSoon": "¡Las opciones de personalización estarán disponibles pronto!"
 }
