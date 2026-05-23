@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         const response = await authAPI.me();
         const data = response.data; // The actual payload from the server
         if (data && data.usuario && data.usuario.rol !== 'cliente') {
-          setUser(data.usuario); // Set the user state with the payload
+          setUser(data.usuario);
         } else {
           // If the user is a customer or data is invalid, clear the session
           setUser(null);
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Access to the admin panel is denied for this user role.');
       }
 
-      setUser(data.usuario); // Set the user state with the payload
+      setUser(data.usuario);
       return { success: true };
     } catch (error) {
       // Ensure user state is null on a failed login attempt

@@ -272,12 +272,22 @@ def logout():
 @auth_bp.route("/me", methods=["GET"])
 @login_required
 def get_current_user():
+    conn = get_db()
+    tenant_slug = None
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute("SELECT slug FROM tenants WHERE id_tenant = %s", (current_user.tenant_id,))
+            tenant_row = cursor.fetchone()
+            if tenant_row:
+                tenant_slug = tenant_row['slug']
+    except Exception as e:
+        current_app.logger.error(f"Could not fetch tenant slug for tenant_id {current_user.tenant_id}: {e}")
+
     return jsonify({
         "usuario": {
             "id": current_user.id, "nombre": current_user.nombre, 
             "email": current_user.email, "rol": current_user.rol,
-            "telefono": current_user.telefono,
-            "direccion": current_user.direccion,
+            "tenant_slug": tenant_slug,
             "module_settings": current_user.module_settings
         }
     })

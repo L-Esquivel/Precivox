@@ -5,9 +5,11 @@ import { Spinner, Button, Form } from 'react-bootstrap';
 import AddSectionModal from './AddSectionModal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionEditor from './SectionEditor';
+import { useAuth } from '../../context/AuthContext';
 
 const StorefrontSettings = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,6 +79,14 @@ const StorefrontSettings = () => {
     );
     // Close the editor
     setEditingSection(null);
+  };
+
+  const handleViewLive = () => {
+    if (user && user.tenant_slug) {
+      const storefrontUrl = import.meta.env.VITE_PUBLIC_STOREFRONT_URL || 'http://localhost:5174'; // Default to a different port for local dev
+      const liveUrl = `${storefrontUrl}/tienda/${user.tenant_slug}`;
+      window.open(liveUrl, '_blank');
+    }
   };
 
   const handleToggleVisibility = async (section) => {
@@ -188,9 +198,14 @@ const StorefrontSettings = () => {
         <div className="card shadow-sm">
           <div className="card-header d-flex justify-content-between align-items-center">
             <h3 className="mb-0">{t('storefront.settings.title', 'Storefront Settings')}</h3>
-            <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
-              {t('storefront.settings.addSection', 'Add Section')}
-            </button>
+            <div>
+              <Button variant="outline-secondary" size="sm" className="me-2" onClick={handleViewLive} disabled={!user?.tenant_slug}>
+                {t('storefront.settings.viewLive', 'View Live Page')}
+              </Button>
+              <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+                {t('storefront.settings.addSection', 'Add Section')}
+              </button>
+            </div>
           </div>
           <div className="card-body">
             <p className="text-muted">{t('storefront.settings.description', 'Manage your public landing page sections and appearance here.')}</p>

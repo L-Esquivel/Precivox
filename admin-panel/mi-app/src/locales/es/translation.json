@@ -398,5 +398,6 @@
   "storefront.editor.hero.image": "Imagen de Fondo",
   "storefront.editor.image_preview": "Vista Previa de Imagen",
   "storefront.editor.image_help": "Tamaño recomendado: 1920x1080px.",
-  "storefront.editor.upload_error": "Error al subir la imagen."
+  "storefront.editor.upload_error": "Error al subir la imagen.",
+  "storefront.settings.viewLive": "Ver Página Pública"
 }
