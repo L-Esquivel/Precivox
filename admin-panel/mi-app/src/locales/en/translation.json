@@ -92,5 +92,12 @@
   "suppliesPage.table.name": "Name",
   "suppliesPage.table.stock": "Stock",
   "suppliesPage.table.unit": "Unit",
-  "suppliesPage.table.cost": "Cost per Unit"
+  "suppliesPage.table.cost": "Cost per Unit",
+  "usersList.form.phone": "Phone",
+  "usersList.form.address": "Address",
+  "usersList.form.role_customer": "Customer",
+  "usersList.form.role_employee": "Employee",
+  "usersList.form.role_admin": "Administrator",
+  "usersList.form.update_button": "Update User",
+  "usersList.form.create_button": "Create User"
 }

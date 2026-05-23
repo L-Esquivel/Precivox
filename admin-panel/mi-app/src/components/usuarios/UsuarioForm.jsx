@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const UserForm = ({ user, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
+  const { t } = useTranslation();
     nombre: '',
     email: '',
     password: '',
@@ -41,7 +43,7 @@ const UserForm = ({ user, onSubmit, onClose }) => {
         <div className="modal-content">
           <div className="modal-header bg-primary text-white">
             <h5 className="modal-title">
-              {user ? '✏️ Edit User' : '➕ New User'}
+              {user ? `✏️ ${t('usersList.edit_user')}` : `➕ ${t('usersList.add_user')}`}
             </h5>
             <button 
               type="button" 
@@ -55,7 +57,7 @@ const UserForm = ({ user, onSubmit, onClose }) => {
               <div className="row">
                 <div className="col-md-6">
                   <div className="mb-3">
-                    <label className="form-label">Name *</label>
+                    <label className="form-label">{t('usersList.form.name')} *</label>
                     <input
                       type="text"
                       name="nombre"
@@ -69,7 +71,7 @@ const UserForm = ({ user, onSubmit, onClose }) => {
                 
                 <div className="col-md-6">
                   <div className="mb-3">
-                    <label className="form-label">Email *</label>
+                    <label className="form-label">{t('usersList.form.email')} *</label>
                     <input
                       type="email"
                       name="email"
@@ -84,7 +86,7 @@ const UserForm = ({ user, onSubmit, onClose }) => {
 
               <div className="mb-3">
                 <label className="form-label">
-                  Password {!user && '*'}
+                  {t('usersList.form.password')} {!user && '*'}
                 </label>
                 <input
                   type="password"
@@ -93,11 +95,11 @@ const UserForm = ({ user, onSubmit, onClose }) => {
                   value={formData.password}
                   onChange={handleChange}
                   required={!user}
-                  placeholder={user ? "Leave empty to keep current password" : ""}
+                  placeholder={user ? t('usersList.form.password_help') : ""}
                 />
                 {user && (
                   <div className="form-text">
-                    Leave empty to keep current password
+                    {t('usersList.form.password_help')}
                   </div>
                 )}
               </div>
@@ -105,7 +107,7 @@ const UserForm = ({ user, onSubmit, onClose }) => {
               <div className="row">
                 <div className="col-md-6">
                   <div className="mb-3">
-                    <label className="form-label">Phone</label>
+                    <label className="form-label">{t('usersList.form.phone')}</label>
                     <input
                       type="tel"
                       name="telefono"
@@ -118,23 +120,23 @@ const UserForm = ({ user, onSubmit, onClose }) => {
                 
                 <div className="col-md-6">
                   <div className="mb-3">
-                    <label className="form-label">Role</label>
+                    <label className="form-label">{t('usersList.form.role')}</label>
                     <select
                       name="rol"
                       className="form-select"
                       value={formData.rol}
                       onChange={handleChange}
                     >
-                      <option value="cliente">Customer</option>
-                      <option value="empleado">Employee</option>
-                      <option value="admin">Administrator</option>
+                      <option value="cliente">{t('usersList.form.role_customer')}</option>
+                      <option value="empleado">{t('usersList.form.role_employee')}</option>
+                      <option value="admin">{t('usersList.form.role_admin')}</option>
                     </select>
                   </div>
                 </div>
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Address</label>
+                <label className="form-label">{t('usersList.form.address')}</label>
                 <input
                   type="text"
                   name="direccion"
@@ -151,13 +153,13 @@ const UserForm = ({ user, onSubmit, onClose }) => {
                 className="btn btn-secondary" 
                 onClick={onClose}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button 
                 type="submit" 
                 className="btn btn-primary"
               >
-                {user ? '📝 Update' : '✅ Create'} User
+                {user ? `📝 ${t('usersList.form.update_button')}` : `✅ ${t('usersList.form.create_button')}`}
               </button>
             </div>
           </form>

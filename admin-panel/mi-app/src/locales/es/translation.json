@@ -92,5 +92,12 @@
   "suppliesPage.table.name": "Nombre",
   "suppliesPage.table.stock": "Inventario",
   "suppliesPage.table.unit": "Unidad",
-  "suppliesPage.table.cost": "Costo por Unidad"
+  "suppliesPage.table.cost": "Costo por Unidad",
+  "usersList.form.phone": "Teléfono",
+  "usersList.form.address": "Dirección",
+  "usersList.form.role_customer": "Cliente",
+  "usersList.form.role_employee": "Empleado",
+  "usersList.form.role_admin": "Administrador",
+  "usersList.form.update_button": "Actualizar Usuario",
+  "usersList.form.create_button": "Crear Usuario"
 }
