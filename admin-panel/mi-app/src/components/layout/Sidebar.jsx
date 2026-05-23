@@ -17,6 +17,19 @@ const Sidebar = ({ onShowSupport }) => {
     'Merma': 'menu.waste',
   };
 
+  // FIX: This object maps the module keys from the database (in Spanish)
+  // to the correct URL paths (in English) defined in App.jsx.
+  // This is the key to making the navigation links work again.
+  const moduleKeyToPath = {
+    usuarios: '/users',
+    productos: '/products',
+    pedidos: '/orders',
+    insumos: '/supplies',
+    recetas: '/recipes',
+    gastos: '/expenses',
+    merma: '/waste',
+  };
+
   // This function returns the custom CSS classes from your App.css file.
   // NavLink will automatically add the 'active' class where needed.
   const getNavLinkClass = ({ isActive }) => `nav-button ${isActive ? 'active' : ''}`;
@@ -42,11 +55,15 @@ const Sidebar = ({ onShowSupport }) => {
         {user?.rol === 'admin' && (
           <>
             {user.module_settings?.map(module => (
-              <li key={module.module_key}>
-                <NavLink to={`/${module.module_key.toLowerCase()}`} className={getNavLinkClass}>
-                  {module.icon} {t(labelToTKey[module.label] || module.label)}
-                </NavLink>
-              </li>
+              <li key={module.module_key}>{(() => {
+                const path = moduleKeyToPath[module.module_key.toLowerCase()];
+                if (!path) return null; // Don't render a link if the path is not defined
+                return (
+                  <NavLink to={path} className={getNavLinkClass}>
+                    {module.icon} {t(labelToTKey[module.label] || module.label)}
+                  </NavLink>
+                );
+              })()}</li>
             ))}
             <li>
               <NavLink to="/storefront-settings" className={getNavLinkClass}>
