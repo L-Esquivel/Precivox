@@ -13,7 +13,21 @@ const UsuariosList = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
 
-  // ... (aquí iría tu lógica para cargar, añadir, editar y borrar usuarios)
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
+        const data = await usuariosService.getUsers();
+        setUsuarios(data);
+      } catch (err) {
+        setError(t('usersList.errors.load_users'));
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUsers();
+  }, [t]); // Add t to dependency array as it's used in error message
 
   const handleOpenModal = (user = null) => {
     setIsEditing(!!user);
@@ -28,15 +42,16 @@ const UsuariosList = () => {
   };
 
   if (loading) {
-    return <div className="loading">Loading users...</div>;
     return <div className="loading">{t('common.loading')}</div>;
+  }
+
+  if (error) {
+    return <div className="alert alert-danger">{error}</div>;
   }
 
   return (
     <div className="usuarios-container">
       <div className="usuarios-header">
-        <h2>User Management</h2>
-        <button className="btn-primary" onClick={() => handleOpenModal()}>Add User</button>
         <h2>{t('usersList.title')}</h2>
         <button className="btn-primary" onClick={() => handleOpenModal()}>{t('usersList.add_user')}</button>
       </div>
@@ -45,10 +60,6 @@ const UsuariosList = () => {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
               <th>{t('usersList.table.name')}</th>
               <th>{t('usersList.table.email')}</th>
               <th>{t('usersList.table.role')}</th>
@@ -63,8 +74,6 @@ const UsuariosList = () => {
                   <td>{user.email}</td>
                   <td><span className={`role-badge role-${user.rol}`}>{user.rol}</span></td>
                   <td className="actions">
-                    <button className="btn-edit" onClick={() => handleOpenModal(user)}>Edit</button>
-                    <button className="btn-delete">Delete</button>
                     <button className="btn-edit" onClick={() => handleOpenModal(user)}>{t('common.edit')}</button>
                     <button className="btn-delete">{t('common.delete')}</button>
                   </td>
@@ -72,7 +81,6 @@ const UsuariosList = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="no-data">No users found.</td>
                 <td colSpan="4" className="no-data">{t('common.no_data')}</td>
               </tr>
             )}
@@ -84,30 +92,24 @@ const UsuariosList = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>{isEditing ? 'Edit User' : 'Add User'}</h3>
               <h3>{isEditing ? t('usersList.edit_user') : t('usersList.add_user')}</h3>
               <button onClick={handleCloseModal} className="close-button">&times;</button>
             </div>
             <form>
               <div className="form-group">
-                <label>Full Name</label>
                 <label>{t('usersList.form.name')}</label>
                 <input type="text" name="nombre" value={currentUser.nombre} />
               </div>
               <div className="form-group">
-                <label>Email Address</label>
                 <label>{t('usersList.form.email')}</label>
                 <input type="email" name="email" value={currentUser.email} />
               </div>
               <div className="form-group">
-                <label>Password</label>
                 <label>{t('usersList.form.password')}</label>
                 <input type="password" name="password" />
-                <small>Leave blank to keep the current password.</small>
                 <small>{t('usersList.form.password_help')}</small>
               </div>
               <div className="form-group">
-                <label>Role</label>
                 <label>{t('usersList.form.role')}</label>
                 <select name="rol" value={currentUser.rol}>
                   <option value="admin">Admin</option>
@@ -115,8 +117,6 @@ const UsuariosList = () => {
                 </select>
               </div>
               <div className="form-actions">
-                <button type="button" onClick={handleCloseModal}>Cancel</button>
-                <button type="submit">Save</button>
                 <button type="button" onClick={handleCloseModal}>{t('common.cancel')}</button>
                 <button type="submit">{t('common.save')}</button>
               </div>
