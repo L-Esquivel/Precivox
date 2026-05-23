@@ -355,10 +355,20 @@ def get_order_details_admin(id):
             FROM detalle_pedidos dp JOIN productos p ON dp.producto_id = p.id_producto
             WHERE dp.pedido_id = %s AND dp.tenant_id = %s
         """, (id, tenant_id))
-        details = [dict(d) for d in cursor.fetchall()]
-        for d in details:
-            d['subtotal'] = float(d['subtotal'] or 0)
-            d['precio_unitario'] = float(d.get('precio_unitario') or 0)
+        rows = cursor.fetchall()
+        # Explicitly build the response to ensure correct data types and prevent serialization issues.
+        details = []
+        for row in rows:
+            details.append({
+                "id_detalle_pedido": row["id_detalle_pedido"],
+                "pedido_id": row["pedido_id"],
+                "producto_id": row["producto_id"],
+                "cantidad": int(row["cantidad"]),
+                "precio_unitario": float(row["precio_unitario"] or 0),
+                "subtotal": float(row["subtotal"] or 0),
+                "producto_nombre": row["producto_nombre"],
+                "categoria": row["categoria"]
+            })
         return jsonify(details)
     except Exception as e:
         current_app.logger.error(f"Error in get_order_details_admin: {e}")
