@@ -18,7 +18,9 @@ const Login = () => {
     try {
       const result = await login(email, password);
       if (!result.success) {
-        setError(result.error);
+        // 💡 FIX: Traduce la clave de error recibida del backend.
+        // Si el backend envía "login.error.invalid_credentials", t() lo convierte en el mensaje completo.
+        setError(t(result.error));
       }
       // The redirection and role verification logic now lives in AuthContext and App.jsx
     } catch (err) {

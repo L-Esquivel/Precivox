@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { useTranslation } from 'react-i18next'; // 💡 
 
 // Import your main components/pages
 import Layout from './components/layout/Layout';
@@ -18,10 +19,11 @@ import StorefrontSettings from './components/storefront/StorefrontSettings';
 
 // A wrapper to protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading, t } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  const { t } = useTranslation();
   if (loading) {
-    // Using the translation key from your context
-    return <div className="loading">{t ? t('verifyingSession') : 'Verifying session...'}</div>;
+    // 💡 FIX: Ahora esto siempre funcionará y mostrará el mensaje traducido.
+    return <div className="loading">{t('verifyingSession')}</div>;
   }
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
