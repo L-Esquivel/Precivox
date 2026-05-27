@@ -1,219 +1,192 @@
-// c:\Proyectos de programacion\SWEETLAND FULL PROYECT\admin-panel\mi-app\src\components\tenants\TenantsList.jsx
-import React, { useState, useEffect } from 'react';
-import { tenantsService } from '../../services/tenantsService';
-import { modulesService } from '../../services/modulesService';
-import PaymentManagerModal from './PaymentManagerModal';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { tenantsAPI } from '../../services/api';
+import { FaPlus, FaEdit, FaTrash, FaPalette, FaSave, FaTimes } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 import './TenantsList.css';
 
-function TenantsList() {
-  const [tenants, setTenants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [notification, setNotification] = useState({ message: '', type: '' });
-  const [availableModules, setAvailableModules] = useState([]);
-  const [form, setForm] = useState({
-    tenant_name: '',
-    admin_name: '',
-    admin_email: '',
-    admin_password: ''
-  });
-  const [customLabels, setCustomLabels] = useState({});
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedTenant, setSelectedTenant] = useState(null);
+// List of customizable modules. This should match the Sidebar modules.
+const AVAILABLE_MODULES = [
+  'menu.users',
+  'menu.products',
+  'menu.orders',
+  'menu.supplies',
+  'menu.recipes',
+  'menu.expenses',
+  'menu.waste',
+  'menu.storefront'
+];
 
-  const fetchTenants = async () => {
-    try {
-      // No need to set loading to true here if called from another function that already handles it
-      const data = await tenantsService.getAllTenants();
-      setTenants(data);
-      setError('');
-    } catch (err) {
-      setError(err.message || 'Error loading tenants');
-    }
-  };
+const ModuleCustomizationModal = ({ tenant, onClose, onSaveSuccess }) => {
+  const { t } = useTranslation();
+  const [settings, setSettings] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoading(true);
-      try {
-        const [tenantsData, modulesRawData] = await Promise.all([
-          tenantsService.getAllTenants(),
-          modulesService.getAllModules()
-        ]);
+    // Initialize settings with tenant's data or empty strings
+    const initialSettings = AVAILABLE_MODULES.reduce((acc, key) => {
+      acc[key] = tenant.module_settings?.[key] || '';
+      return acc;
+    }, {});
+    setSettings(initialSettings);
+  }, [tenant]);
 
-        // The API returns an array of objects, which is the correct format.
-        // The previous mapping was incorrect and has been removed.
-        const modulesData = modulesRawData;
-
-        setTenants(tenantsData);
-        setAvailableModules(modulesData);
-        
-        // This ensures that each input is a "controlled component" from the start,
-        // fixing the issue of not being able to edit the text.
-        const initialLabels = modulesData.reduce((acc, module) => {
-          acc[module.module_key] = '';
-          return acc;
-        }, {});
-        setCustomLabels(initialLabels);
-
-      } catch (err) {
-        setError(err.message || 'Error loading initial data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInitialData();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleLabelChange = (e) => {
-    const { name, value } = e.target;
-    setCustomLabels(prev => ({ ...prev, [name]: value }));
-  };
-
-  const openPaymentModal = (tenant) => {
-    setSelectedTenant(tenant);
-    setShowPaymentModal(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setNotification({ message: '', type: '' });
+  const handleSave = async () => {
     setLoading(true);
     try {
-      const payload = { ...form, custom_labels: customLabels };
-      await tenantsService.createTenant(payload);
-      setNotification({ message: 'Tenant created successfully', type: 'success' });
-      setForm({ tenant_name: '', admin_name: '', admin_email: '', admin_password: '' });
-      
-      // Reset labels to their initial (empty) state for the next form.
-      const initialLabels = availableModules.reduce((acc, module) => {
-        acc[module.module_key] = '';
-        return acc;
-      }, {});
-      setCustomLabels(initialLabels);
-      
-      await fetchTenants(); // Reload the list
-    } catch (err) {
-      setNotification({ message: err.message, type: 'error' });
+      await tenantsAPI.update(tenant.id_tenant, { module_settings: settings });
+      onSaveSuccess({ ...tenant, module_settings: settings });
+      Swal.fire({ icon: 'success', title: t('common.save'), showConfirmButton: false, timer: 1500 });
+      onClose();
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Oops...', text: t('tenants.errors.save_settings') });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete the tenant "${name}"? This action is irreversible and will delete all its data.`)) {
-      setNotification({ message: '', type: '' });
-      setLoading(true);
-      try {
-        await tenantsService.deleteTenant(id);
-        setNotification({ message: 'Tenant deleted successfully', type: 'success' });
-        await fetchTenants(); // Reload the list
-      } catch (err) {
-        setNotification({ message: err.message, type: 'error' });
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  const Notification = ({ message, type }) => {
-    if (!message) return null;
-    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-    return <div className={`alert ${alertClass}`}>{message}</div>;
-  };
-
   return (
-    <>
-      <div className="tenants-container">
-        <h2>Tenant Management</h2>
-      
-      <Notification message={notification.message} type={notification.type} />
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      <div className="card mb-4">
-        <div className="card-header">
-          <h5>Create New Tenant and Administrator</h5>
-        </div>
-        <div className="card-body">
-          <form onSubmit={handleSubmit} className="row g-3" aria-busy={loading}>
-            <div className="col-md-6">
-              <input type="text" name="tenant_name" value={form.tenant_name} onChange={handleInputChange} className="form-control" placeholder="Organization Name" required />
-            </div>
-            <div className="col-md-6">
-              <input type="text" name="admin_name" value={form.admin_name} onChange={handleInputChange} className="form-control" placeholder="Admin Name" required />
-            </div>
-            <div className="col-md-6">
-              <input type="email" name="admin_email" value={form.admin_email} onChange={handleInputChange} className="form-control" placeholder="Admin Email" required />
-            </div>
-            <div className="col-md-6">
-              <input type="password" name="admin_password" value={form.admin_password} onChange={handleInputChange} className="form-control" placeholder="Admin Password" required />
-            </div>
-            <div className="col-12 mt-4">
-              <h6>Customize Module Labels:</h6>
-              <div className="row">
-                {availableModules.map(module => (
-                  <div key={module.module_key} className="col-md-6 mb-3">
-                    <label htmlFor={`label-for-${module.module_key}`} className="form-label fw-bold">
-                      {module.label || module.module_key}
+    <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="modal-dialog modal-lg modal-dialog-centered">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title"><FaPalette className="me-2" />{t('tenants.customize_modal_title', { tenantName: tenant.nombre })}</h5>
+            <button type="button" className="btn-close" onClick={onClose}></button>
+          </div>
+          <div className="modal-body">
+            <p className="mb-4">{t('tenants.customize_desc')}</p>
+            <div className="row g-3">
+              {AVAILABLE_MODULES.map(moduleKey => (
+                <div className="col-md-6" key={moduleKey}>
+                  <div className="form-group">
+                    {/* 💡 FIX: Use the new translation key and provide a fallback to the module key itself. */}
+                    {/* This ensures that a descriptive label is always shown, solving the "undefined" issue. */}
+                    <label htmlFor={`setting-${moduleKey}`} className="form-label text-muted small">
+                      {t('tenants.customize_label', { defaultModuleName: t(moduleKey) || moduleKey })}
                     </label>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        name={module.module_key}
-                        id={`label-for-${module.module_key}`}
-                        value={customLabels[module.module_key] || ''}
-                        onChange={handleLabelChange}
-                        placeholder={`Customize: ${module.label || module.module_key}`}
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      id={`setting-${moduleKey}`}
+                      className="form-control"
+                      placeholder={t(moduleKey) || moduleKey} // Fallback to key for placeholder
+                      value={settings[moduleKey] || ''}
+                      onChange={(e) => handleSettingChange(moduleKey, e.target.value)}
+                    />
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-            <div className="col-12">
-              <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Creating...' : 'Create Tenant'}</button>
-            </div>
-          </form>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}><FaTimes className="me-2" />{t('common.cancel')}</button>
+            <button type="button" className="btn btn-primary" onClick={handleSave} disabled={loading}>
+              {loading ? <span className="spinner-border spinner-border-sm me-2" /> : <FaSave className="me-2" />}
+              {t('common.save')}
+            </button>
+          </div>
         </div>
       </div>
-      
-      <div className="table-responsive">
-        <table className="table table-striped table-hover">
-          <thead className="thead-dark">
+    </div>
+  );
+};
+
+const TenantsList = () => {
+  const { t } = useTranslation();
+  const [tenants, setTenants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [editingTenant, setEditingTenant] = useState(null);
+
+  const fetchTenants = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await tenantsAPI.getAll();
+      setTenants(response.data);
+    } catch (err) {
+      setError(t('tenants.errors.load'));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    fetchTenants();
+  }, [fetchTenants]);
+
+  const handleSaveSuccess = (updatedTenant) => {
+    setTenants(prev => prev.map(t => t.id_tenant === updatedTenant.id_tenant ? updatedTenant : t));
+  };
+
+  const handleDelete = (tenant) => {
+    Swal.fire({
+      title: t('tenants.delete_confirm_title'),
+      text: t('tenants.delete_confirm_text', { tenantName: tenant.nombre }),
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: t('common.delete'),
+      cancelButtonText: t('common.cancel')
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await tenantsAPI.delete(tenant.id_tenant);
+          setTenants(prev => prev.filter(t => t.id_tenant !== tenant.id_tenant));
+          Swal.fire({ icon: 'success', title: t('common.delete'), showConfirmButton: false, timer: 1500 });
+        } catch (err) {
+          Swal.fire({ icon: 'error', title: 'Oops...', text: t('tenants.errors.delete') });
+        }
+      }
+    });
+  };
+
+  if (loading) return <div className="loading">{t('common.loading')}</div>;
+  if (error) return <div className="alert alert-danger">{error}</div>;
+
+  return (
+    <div className="tenants-container">
+      <div className="tenants-header">
+        <h2>{t('tenants.title')}</h2>
+        <button className="btn btn-primary" disabled>
+          <FaPlus className="me-2" />{t('tenants.add_tenant')}
+        </button>
+      </div>
+
+      <div className="tenants-table">
+        <table>
+          <thead>
             <tr>
-              <th>ID</th>
-              <th>Organization Name</th>
-              <th>Creation Date</th>
-              <th>Actions</th>
+              <th>{t('tenants.table.name')}</th>
+              <th>{t('tenants.table.slug')}</th>
+              <th>{t('tenants.table.status')}</th>
+              <th className="text-end">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
-            {loading && tenants.length === 0 && <tr><td colSpan="4" className="text-center">Loading...</td></tr>}
             {tenants.map(tenant => (
               <tr key={tenant.id_tenant}>
-                <td>{tenant.id_tenant}</td>
-                <td>{tenant.nombre}</td>
-                <td>{new Date(tenant.fecha_creacion).toLocaleDateString()}</td>
-                <td className="d-flex gap-2">
-                  <button 
-                    className="btn btn-info btn-sm"
-                    onClick={() => openPaymentModal(tenant)}
-                    title="Manage Payments"
-                  >
-                    💰 Payments
+                <td className="name-cell">{tenant.nombre}</td>
+                <td>
+                  <span className="slug-badge">/{tenant.slug}</span>
+                </td>
+                <td>
+                  <span className={`status-badge ${tenant.activo ? 'status-active' : 'status-inactive'}`}>
+                    {tenant.activo ? t('tenants.status.active') : t('tenants.status.inactive')}
+                  </span>
+                </td>
+                <td className="actions-cell">
+                  <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditingTenant(tenant)}>
+                    <FaPalette title={t('tenants.customize_modules')} />
                   </button>
-                  <button 
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(tenant.id_tenant, tenant.nombre)}
-                    disabled={loading}
-                  >
-                    Delete
+                  <button className="btn btn-sm btn-outline-primary" disabled>
+                    <FaEdit title={t('tenants.edit_tenant')} />
+                  </button>
+                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(tenant)}>
+                    <FaTrash title={t('common.delete')} />
                   </button>
                 </td>
               </tr>
@@ -221,15 +194,16 @@ function TenantsList() {
           </tbody>
         </table>
       </div>
-      </div>
-      {showPaymentModal && selectedTenant && (
-        <PaymentManagerModal
-          tenant={selectedTenant}
-          onClose={() => setShowPaymentModal(false)}
+
+      {editingTenant && (
+        <ModuleCustomizationModal
+          tenant={editingTenant}
+          onClose={() => setEditingTenant(null)}
+          onSaveSuccess={handleSaveSuccess}
         />
       )}
-    </>
+    </div>
   );
-}
+};
 
 export default TenantsList;
