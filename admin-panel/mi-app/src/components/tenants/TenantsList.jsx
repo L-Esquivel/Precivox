@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { tenantsAPI } from '../../services/api';
-import { FaPlus, FaEdit, FaTrash, FaPalette, FaSave, FaTimes } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import './TenantsList.css';
 
@@ -54,7 +53,7 @@ const ModuleCustomizationModal = ({ tenant, onClose, onSaveSuccess }) => {
       <div className="modal-dialog modal-lg modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title"><FaPalette className="me-2" />{t('tenants.customize_modal_title', { tenantName: tenant.nombre })}</h5>
+            <h5 className="modal-title">{t('tenants.customize_modal_title', { tenantName: tenant.nombre })}</h5>
             <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
           <div className="modal-body">
@@ -82,9 +81,9 @@ const ModuleCustomizationModal = ({ tenant, onClose, onSaveSuccess }) => {
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}><FaTimes className="me-2" />{t('common.cancel')}</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
             <button type="button" className="btn btn-primary" onClick={handleSave} disabled={loading}>
-              {loading ? <span className="spinner-border spinner-border-sm me-2" /> : <FaSave className="me-2" />}
+              {loading && <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>}
               {t('common.save')}
             </button>
           </div>
@@ -152,7 +151,7 @@ const TenantsList = () => {
       <div className="tenants-header">
         <h2>{t('tenants.title')}</h2>
         <button className="btn btn-primary" disabled>
-          <FaPlus className="me-2" />{t('tenants.add_tenant')}
+          {t('tenants.add_tenant')}
         </button>
       </div>
 
@@ -179,14 +178,14 @@ const TenantsList = () => {
                   </span>
                 </td>
                 <td className="actions-cell">
-                  <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditingTenant(tenant)}>
-                    <FaPalette title={t('tenants.customize_modules')} />
+                  <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditingTenant(tenant)} title={t('tenants.customize_modules')}>
+                    {t('tenants.actions.customize')}
                   </button>
-                  <button className="btn btn-sm btn-outline-primary" disabled>
-                    <FaEdit title={t('tenants.edit_tenant')} />
+                  <button className="btn btn-sm btn-outline-primary" disabled title={t('tenants.edit_tenant')}>
+                    {t('common.edit')}
                   </button>
-                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(tenant)}>
-                    <FaTrash title={t('common.delete')} />
+                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(tenant)} title={t('common.delete')}>
+                    {t('common.delete')}
                   </button>
                 </td>
               </tr>

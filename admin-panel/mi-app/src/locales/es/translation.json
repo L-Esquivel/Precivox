@@ -82,6 +82,7 @@
   "common.delete_confirm_title": "Confirmar Eliminación",
   "common.delete_confirm_text": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
   "common.no_data": "No hay datos disponibles.",
+  "tenants.actions.customize": "Personalizar",
   "usersList.title": "Gestión de Usuarios",
   "usersList.add_user": "Añadir Usuario",
   "usersList.edit_user": "Editar Usuario",
