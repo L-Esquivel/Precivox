@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { tenantsAPI } from '../../services/api';
-import Swal from 'sweetalert2';
+// 💡 FIX: Use a more explicit import path for SweetAlert2 to prevent build errors in some environments (like Vercel).
+import Swal from 'sweetalert2/dist/sweetalert2.js';
+import 'sweetalert2/dist/sweetalert2.css';
 import './TenantsList.css';
 
 // List of customizable modules. This should match the Sidebar modules.
