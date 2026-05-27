@@ -1,10 +1,12 @@
 const BASE = import.meta.env.VITE_API_URL || 'https://precivox-backend.onrender.com';
-const API_URL = `${BASE.replace(/\/$/, '')}/tenants`;
+// 💡 FIX: The endpoint in the backend is /api/tenants, not /tenants
+const API_URL = `${BASE.replace(/\/$/, '')}/api/tenants`;
 
-export const tenantsService = {
-  async getAllTenants() {
+// 💡 FIX: Renamed to tenantsAPI and methods to match component usage
+export const tenantsAPI = {
+  async getAll() {
     try {
-      const response = await fetch(`${API_URL}/`, { credentials: 'include' });
+      const response = await fetch(API_URL, { credentials: 'include' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'You do not have permission to view this section');
@@ -15,9 +17,9 @@ export const tenantsService = {
     }
   },
 
-  async createTenant(data) {
+  async create(data) {
     try {
-      const response = await fetch(`${API_URL}/`, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -33,7 +35,7 @@ export const tenantsService = {
     }
   },
 
-  async updateTenant(id, data) {
+  async update(id, data) {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
@@ -51,7 +53,7 @@ export const tenantsService = {
     }
   },
 
-  async deleteTenant(id) {
+  async delete(id) {
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE', credentials: 'include' });
       const responseData = await response.json();

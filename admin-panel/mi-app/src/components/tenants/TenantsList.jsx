@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-// 💡 FIX: Import from the new dedicated tenants API service file.
-import { tenantsAPI } from '../../services/tenantsAPI';
+// 💡 FIX: Import from the existing, corrected tenants service file.
+import { tenantsAPI } from '../../services/tenantsService';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'sweetalert2/dist/sweetalert2.css';
 import './TenantsList.css';
