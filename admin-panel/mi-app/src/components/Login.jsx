@@ -1,14 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    // 💡 FIX: Redirect the user if they are already authenticated.
+    // This handles both successful logins and cases where a logged-in user
+    // navigates back to the /login page.
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +32,9 @@ const Login = () => {
         // 💡 FIX: Traduce la clave de error recibida del backend.
         // Si el backend envía "login.error.invalid_credentials", t() lo convierte en el mensaje completo.
         setError(t(result.error));
-      }
+      } 
+      // If login is successful, the useEffect hook above will handle the redirection
+      // when the `isAuthenticated` state changes.
       // The redirection and role verification logic now lives in AuthContext and App.jsx
     } catch (err) {
       setError(t('login.serverError'));
