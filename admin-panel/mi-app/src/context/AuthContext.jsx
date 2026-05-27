@@ -45,20 +45,26 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await authAPI.login(email, password);
-      const data = response.data; // The actual payload from the server
+      const data = response.data;
 
-      // Security check: only admin or superadmin can log into the panel
-      if (data && data.usuario && data.usuario.rol === 'cliente') {
-        throw new Error('Access to the admin panel is denied for this user role.');
+      // 💡 FIX: Perform a positive and strict validation of the response.
+      // The login is only successful if we receive a user object with an 'admin' or 'superadmin' role.
+      if (data && data.usuario && (data.usuario.rol === 'admin' || data.usuario.rol === 'superadmin')) {
+        setUser(data.usuario);
+        return { success: true };
+      } else {
+        // If the user is a 'cliente', throw a specific role denial error.
+        if (data && data.usuario && data.usuario.rol === 'cliente') {
+          throw new Error('login.error.role_denied');
+        }
+        // For any other case (e.g., missing user object), throw a generic server error.
+        // This prevents the app from getting into an inconsistent state.
+        throw new Error('login.serverError');
       }
-
-      setUser(data.usuario);
-      return { success: true };
     } catch (error) {
-      // Ensure user state is null on a failed login attempt
       setUser(null);
-      // Extract the specific error message from the API response if available,
-      // otherwise fall back to the generic error message.
+      // The error message can come from the API response (e.g., 401 invalid credentials)
+      // or from the errors thrown within the 'try' block.
       const apiErrorMessage = error.response?.data?.error || error.message;
       return { success: false, error: apiErrorMessage };
     } finally {
