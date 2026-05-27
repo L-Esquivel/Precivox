@@ -105,8 +105,10 @@ const TenantsList = () => {
   const fetchTenants = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await tenantsAPI.getAll();
-      setTenants(response.data);
+      // 💡 FIX: The fetch-based service returns the data array directly,
+      // not wrapped in a .data object like axios does.
+      const tenantsData = await tenantsAPI.getAll();
+      setTenants(tenantsData);
     } catch (err) {
       setError(t('tenants.errors.load'));
     } finally {
