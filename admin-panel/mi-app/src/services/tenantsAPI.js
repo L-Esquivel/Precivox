@@ -9,7 +9,8 @@ const API_URL = `${BASE.replace(/\/$/, '')}/api/tenants`;
 export const tenantsAPI = {
   async getAll() {
     try {
-      const response = await fetch(`${API_URL}/`, { credentials: 'include' });
+      // 💡 FIX: Remove trailing slash. The backend endpoint is at /api/tenants, not /api/tenants/
+      const response = await fetch(API_URL, { credentials: 'include' });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Error loading tenants');
@@ -38,7 +39,8 @@ export const tenantsAPI = {
 
   async create(data) {
     try {
-      const response = await fetch(`${API_URL}/`, {
+      // 💡 FIX: Remove trailing slash. The backend endpoint is at /api/tenants, not /api/tenants/
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
