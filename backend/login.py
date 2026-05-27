@@ -125,7 +125,8 @@ def login():
         })
     
     register_log(f"Failed login attempt for: {email}")
-    return jsonify({"error": "Invalid credentials"}), 401
+    # 💡 FIX: Return an i18n key for the frontend to translate, instead of a hardcoded string.
+    return jsonify({"error": "login.error.invalid_credentials"}), 401
 
 # =========================
 # PASSWORD RECOVERY 📧
