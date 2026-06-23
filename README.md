@@ -1,4 +1,4 @@
-# Precivox - Business Intelligence SaaS Platform
+# Precivox - Business Intelligence SaaS Platform (Under maintenance)
 
 Precivox is a Multi-Tenant Software as a Service (SaaS) platform engineered to serve as the business intelligence core for small and medium-sized enterprises (SMEs). The platform's flagship feature is its Advanced Costing Engine, which replaces fragmented spreadsheets with a unified, data-driven ecosystem for precise recipe costing, inventory management, and real-time profitability analysis.
 
