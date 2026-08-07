@@ -18,7 +18,7 @@ def get_all_tenants():
     conn = get_db()
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT id_tenant, nombre, fecha_creacion FROM tenants ORDER BY fecha_creacion DESC")
+            cursor.execute("SELECT id_tenant, nombre, created_at FROM tenants ORDER BY created_at DESC")
             tenants_raw = cursor.fetchall()
             # Explicitly convert results to a list of dictionaries
             # to ensure consistent and predictable JSON serialization.
