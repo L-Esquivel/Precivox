@@ -122,12 +122,84 @@ const ModuleCustomizationModal = ({ tenant, onClose, onSaveSuccess }) => {
   );
 };
 
+const CreateTenantModal = ({ onClose, onSaveSuccess }) => {
+  const { t } = useTranslation();
+  const [formData, setFormData] = useState({
+    tenant_name: '',
+    admin_name: '',
+    admin_email: '',
+    admin_password: ''
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    if (!formData.tenant_name || !formData.admin_name || !formData.admin_email || !formData.admin_password) {
+      Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Por favor completa todos los campos' });
+      return;
+    }
+    setSaving(true);
+    try {
+      await tenantsAPI.create(formData);
+      Swal.fire({ icon: 'success', title: 'Inquilino creado', showConfirmButton: false, timer: 1500 });
+      onSaveSuccess();
+      onClose();
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Oops...', text: error.message || 'Error al crear inquilino' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">{t('tenants.add_tenant')}</h5>
+            <button type="button" className="btn-close" onClick={onClose}></button>
+          </div>
+          <div className="modal-body">
+            <div className="mb-3">
+              <label className="form-label">Nombre del Inquilino (Negocio)</label>
+              <input type="text" className="form-control" name="tenant_name" value={formData.tenant_name} onChange={handleChange} placeholder="Ej. Airbnb" />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Nombre del Administrador</label>
+              <input type="text" className="form-control" name="admin_name" value={formData.admin_name} onChange={handleChange} placeholder="Ej. Juan Pérez" />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Correo del Administrador</label>
+              <input type="email" className="form-control" name="admin_email" value={formData.admin_email} onChange={handleChange} placeholder="Ej. admin@airbnb.com" />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Contraseña del Administrador</label>
+              <input type="password" className="form-control" name="admin_password" value={formData.admin_password} onChange={handleChange} placeholder="******" />
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
+            <button type="button" className="btn btn-primary" onClick={handleSave} disabled={saving}>
+              {saving && <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>}
+              Crear Inquilino
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const TenantsList = () => {
   const { t } = useTranslation();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingTenant, setEditingTenant] = useState(null);
+  const [isAddingTenant, setIsAddingTenant] = useState(false);
 
   const fetchTenants = useCallback(async () => {
     try {
@@ -181,7 +253,7 @@ const TenantsList = () => {
     <div className="tenants-container">
       <div className="tenants-header">
         <h2>{t('tenants.title')}</h2>
-        <button className="btn btn-primary" disabled>
+        <button className="btn btn-primary" onClick={() => setIsAddingTenant(true)}>
           {t('tenants.add_tenant')}
         </button>
       </div>
@@ -201,11 +273,11 @@ const TenantsList = () => {
               <tr key={tenant.id_tenant}>
                 <td className="name-cell">{tenant.nombre}</td>
                 <td>
-                  <span className="slug-badge">/{tenant.slug}</span>
+                  <span className="slug-badge">/{tenant.slug || 'N/A'}</span>
                 </td>
                 <td>
-                  <span className={`status-badge ${tenant.activo ? 'status-active' : 'status-inactive'}`}>
-                    {tenant.activo ? t('tenants.status.active') : t('tenants.status.inactive')}
+                  <span className={`status-badge ${tenant?.activo ? 'status-active' : 'status-inactive'}`}>
+                    {tenant?.activo ? t('tenants.status.active') : t('tenants.status.inactive')}
                   </span>
                 </td>
                 <td className="actions-cell">
@@ -230,6 +302,13 @@ const TenantsList = () => {
           tenant={editingTenant}
           onClose={() => setEditingTenant(null)}
           onSaveSuccess={handleSaveSuccess}
+        />
+      )}
+
+      {isAddingTenant && (
+        <CreateTenantModal
+          onClose={() => setIsAddingTenant(false)}
+          onSaveSuccess={fetchTenants}
         />
       )}
     </div>
