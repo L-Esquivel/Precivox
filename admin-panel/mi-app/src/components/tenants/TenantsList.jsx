@@ -219,10 +219,6 @@ const TenantsList = () => {
     fetchTenants();
   }, [fetchTenants]);
 
-  const handleSaveSuccess = (updatedTenant) => {
-    setTenants(prev => prev.map(t => t.id_tenant === updatedTenant.id_tenant ? updatedTenant : t));
-  };
-
   const handleDelete = (tenant) => {
     Swal.fire({
       title: t('tenants.delete_confirm_title'),
@@ -301,7 +297,7 @@ const TenantsList = () => {
         <ModuleCustomizationModal
           tenant={editingTenant}
           onClose={() => setEditingTenant(null)}
-          onSaveSuccess={handleSaveSuccess}
+          onSaveSuccess={fetchTenants}
         />
       )}
 
