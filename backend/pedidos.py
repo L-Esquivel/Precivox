@@ -154,6 +154,8 @@ def get_pedidos():
             p['total'] = float(p.get('total') or 0)
             if p.get('fecha_pedido'): 
                 p['fecha_pedido'] = p['fecha_pedido'].strftime('%Y-%m-%d %H:%M')
+            if p.get('fecha_entrega') and hasattr(p['fecha_entrega'], 'strftime'):
+                p['fecha_entrega'] = p['fecha_entrega'].strftime('%Y-%m-%d %H:%M')
         return jsonify(orders)
     except Exception as e:
         current_app.logger.error(f"Error en get_pedidos: {e}")

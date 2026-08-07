@@ -22,9 +22,9 @@ def get_ingredientes():
             # and select columns explicitly for clarity.
             cursor.execute("""
                 SELECT 
-                    id_ingrediente, nombre, unidad_medida, 
-                    COALESCE(stock, 0) as stock, 
-                    COALESCE(costo_por_unidad, 0) as costo_por_unidad 
+                    id_ingrediente, nombre, unidad as unidad_medida, 
+                    COALESCE(cantidad, 0) as stock, 
+                    COALESCE(costo_unitario, 0) as costo_por_unidad 
                 FROM ingredientes WHERE tenant_id = %s ORDER BY nombre
             """, (tenant_id,))
             ingredientes_raw = cursor.fetchall()
@@ -56,9 +56,10 @@ def create_ingrediente():
         with conn.cursor() as cursor:
             # 💡 SAAS-IFICATION: Insert the tenant_id.
             cursor.execute("""
-                INSERT INTO ingredientes (nombre, unidad_medida, stock, costo_por_unidad, tenant_id)
+                INSERT INTO ingredientes (nombre, unidad, cantidad, costo_unitario, tenant_id)
                 VALUES (%s, %s, %s, %s, %s)
-            """, (nombre, unidad_medida, float(stock), float(costo_por_unidad), tenant_id))
+                RETURNING id_ingrediente
+            """, (nombre, unidad_medida, stock, costo_por_unidad, tenant_id))
             conn.commit()
 
         # 🛡️ AUDIT: Creation log
@@ -87,9 +88,9 @@ def update_ingrediente(id):
             # 💡 SAAS-IFICATION: Ensure only an ingredient from the correct tenant can be updated.
             cursor.execute("""
                 UPDATE ingredientes
-                SET nombre=%s, unidad_medida=%s, stock=%s, costo_por_unidad=%s
+                SET nombre=%s, unidad=%s, cantidad=%s, costo_unitario=%s
                 WHERE id_ingrediente=%s AND tenant_id = %s
-            """, (nombre, unidad_medida, float(stock or 0), float(costo_por_unidad or 0), id, tenant_id))
+            """, (nombre, unidad_medida, stock, costo_por_unidad, id, tenant_id))
             conn.commit()
 
         # 🛡️ AUDIT: Update log

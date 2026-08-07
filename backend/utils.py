@@ -52,9 +52,9 @@ def register_log(action):
 
         conn = get_db()
         with conn.cursor() as cursor:
-            # The new 'logs' table has a simpler structure.
+            # The new 'audit_logs' table has a simpler structure.
             cursor.execute("""
-                INSERT INTO logs (usuario_id, accion, tenant_id)
+                INSERT INTO audit_logs (usuario_id, accion, tenant_id)
                 VALUES (%s, %s, %s)
             """, (user_id, action, tenant_id))
             conn.commit()
