@@ -122,12 +122,13 @@ CREATE TABLE ingredientes (
     costo_unitario DECIMAL(10,2) DEFAULT 0.00
 );
 
-CREATE TABLE recetas (
-    id_receta SERIAL PRIMARY KEY,
+CREATE TABLE recetas_ingredientes (
+    id SERIAL PRIMARY KEY,
     tenant_id INT REFERENCES tenants(id_tenant) ON DELETE CASCADE,
     id_producto INT REFERENCES productos(id_producto) ON DELETE CASCADE,
     id_ingrediente INT REFERENCES ingredientes(id_ingrediente) ON DELETE CASCADE,
-    cantidad_necesaria DECIMAL(10,2) NOT NULL
+    cantidad_necesaria DECIMAL(10,2) NOT NULL,
+    costo_ingrediente DECIMAL(10,2) DEFAULT 0.00
 );
 
 CREATE TABLE recetas_empaques (
