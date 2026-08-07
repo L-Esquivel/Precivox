@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getStorefrontData } from '../services/publicApi';
-import HeroSection from '../sections/HeroSection';
+import { getStorefrontData } from './publicApi';
+import HeroSection from './HeroSection';
 // Import other section components as they are created
 // import FeaturedProductsSection from '../sections/FeaturedProductsSection';
 
