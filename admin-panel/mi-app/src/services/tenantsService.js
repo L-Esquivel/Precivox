@@ -1,6 +1,5 @@
 const BASE = import.meta.env.VITE_API_URL || 'https://precivox-backend.onrender.com';
-// 💡 FIX: The endpoint in the backend is /api/tenants, not /tenants
-const API_URL = `${BASE.replace(/\/$/, '')}/api/tenants`;
+const API_URL = `${BASE.replace(/\/$/, '')}/tenants`;
 
 // 💡 FIX: Renamed to tenantsAPI and methods to match component usage
 export const tenantsAPI = {
