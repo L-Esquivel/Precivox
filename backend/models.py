@@ -33,7 +33,10 @@ class User(UserMixin):
                         FROM
                             modules m
                         INNER JOIN
-                            tenant_module_settings tms ON m.module_key = tms.module_key AND tms.tenant_id = %s ORDER BY m.order_index ASC
+                            tenant_module_settings tms ON m.module_key = tms.module_key 
+                            AND tms.tenant_id = %s 
+                            AND tms.is_active = TRUE 
+                        ORDER BY m.order_index ASC
                     """, (row['tenant_id'],))
                     # FIX: Explicitly convert results to a list of dictionaries
                     # to ensure consistent JSON serialization, similar to tenants.py.
@@ -72,7 +75,10 @@ class User(UserMixin):
                         FROM
                             modules m
                         INNER JOIN
-                            tenant_module_settings tms ON m.module_key = tms.module_key AND tms.tenant_id = %s ORDER BY m.order_index ASC
+                            tenant_module_settings tms ON m.module_key = tms.module_key 
+                            AND tms.tenant_id = %s 
+                            AND tms.is_active = TRUE 
+                        ORDER BY m.order_index ASC
                     """, (row['tenant_id'],))
                     # FIX: Explicitly convert results to a list of dictionaries.
                     module_settings_raw = cursor.fetchall()
