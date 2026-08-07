@@ -112,7 +112,7 @@ const PedidoForm = ({ productos, onSubmit, onClose, titulo }) => {
 
   return (
     <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-xl">
+      <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '90vw' }}>
         <div className="modal-content">
           <div className="modal-header bg-success text-white">
             <h5 className="modal-title">{titulo}</h5>
