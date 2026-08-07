@@ -199,9 +199,20 @@ CREATE TABLE resenas (
     id_resena SERIAL PRIMARY KEY,
     usuario_id INT REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
     producto_id INT REFERENCES productos(id_producto) ON DELETE CASCADE,
-    calificacion INT,
+    calificacion INT CHECK (calificacion BETWEEN 1 AND 5),
     comentario TEXT,
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_resena TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE storefront_sections (
+    id SERIAL PRIMARY KEY,
+    tenant_id INT REFERENCES tenants(id_tenant) ON DELETE CASCADE,
+    section_type VARCHAR(50) NOT NULL,
+    display_order INT NOT NULL,
+    content JSONB DEFAULT '{}'::jsonb,
+    is_visible BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Default data for modules
@@ -210,11 +221,13 @@ INSERT INTO modules (module_key, label, icon, description, order_index) VALUES
 ('productos', 'Productos', '🍰', 'Catálogo de productos', 2),
 ('pedidos', 'Pedidos', '🛒', 'Gestión de órdenes', 3),
 ('insumos', 'Insumos', '📦', 'Ingredientes y empaques', 4),
-('recetas', 'Recetas', '📖', 'Fichas técnicas y costeo', 5),
-('gastos', 'Gastos', '💸', 'Registro de gastos operativos', 6),
+('recetas', 'Recetas', '📋', 'Fórmulas y preparaciones', 5),
+('gastos', 'Gastos', '💸', 'Registro de gastos fijos y variables', 6),
 ('merma', 'Merma', '🗑️', 'Control de desperdicios', 7),
-('ingredientes', 'Ingredientes', '🥑', 'Terminología para ingredientes', 8),
-('empaques', 'Empaques', '📦', 'Terminología para empaques', 9);
+('ingredientes', 'Ingredientes', '🥚', 'Gestión de ingredientes', 8),
+('empaques', 'Empaques', '📦', 'Gestión de empaques', 9),
+('storefront', 'Tienda en Línea', '🛍️', 'Página pública de ventas', 10)
+ON CONFLICT (module_key) DO NOTHING;
 '''
 
 cursor.execute(schema)
