@@ -28,9 +28,9 @@ landing-page/.env
 *.log
 logs/
 
-# Base de datos local (por si acaso)
-*.sql
-database/*.sql
+# Base de datos local (archivos sueltos, no los de database/)
+schema.sql
+test_db.py
 
 # Carpetas de IDEs y editores
 .vscode/
