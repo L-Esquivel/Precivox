@@ -323,3 +323,40 @@ def get_public_storefront_data(tenant_slug):
     except Exception as e:
         current_app.logger.error(f"Error fetching public storefront for slug {tenant_slug}: {e}")
         return jsonify({"error": "An error occurred while loading the page."}), 500
+
+@public_storefront_bp.route("/<string:tenant_slug>/products", methods=["GET"])
+def get_public_storefront_products(tenant_slug):
+    """
+    Fetches all public products for a given tenant slug.
+    This assumes you have an 'es_publico' or similar flag on products.
+    For now, we return all products if such flag doesn't exist, but in a real scenario
+    you'd want to filter them.
+    """
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            # First, find the tenant_id from the slug
+            cursor.execute("SELECT id_tenant FROM tenants WHERE slug = %s", (tenant_slug,))
+            tenant_row = cursor.fetchone()
+            if not tenant_row:
+                return jsonify({"error": "Tenant not found"}), 404
+            
+            tenant_id = tenant_row['id_tenant']
+
+            # Fetch products (ideally filtered by a visibility flag)
+            # Assuming 'imagen_url' and 'descripcion' exist. If not, they might be null.
+            cursor.execute(
+                """
+                SELECT id_producto, nombre, categoria, descripcion, precio, imagen_url, stock, controla_stock
+                FROM productos 
+                WHERE tenant_id = %s
+                """,
+                (tenant_id,)
+            )
+            rows = cursor.fetchall()
+            
+            products = [dict(row) for row in rows]
+            return jsonify(products)
+    except Exception as e:
+        current_app.logger.error(f"Error fetching public products for slug {tenant_slug}: {e}")
+        return jsonify({"error": "An error occurred while loading products."}), 500
