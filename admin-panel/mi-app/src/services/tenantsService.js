@@ -65,4 +65,35 @@ export const tenantsAPI = {
       throw error;
     }
   },
+
+  async getModules(id) {
+    try {
+      const response = await fetch(`${API_URL}/${id}/modules`, { credentials: 'include' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error fetching tenant modules');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async updateModules(id, data) {
+    try {
+      const response = await fetch(`${API_URL}/${id}/modules`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Error updating tenant modules');
+      }
+      return responseData;
+    } catch (error) {
+      throw error;
+    }
+  }
 };

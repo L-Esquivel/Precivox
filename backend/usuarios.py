@@ -15,7 +15,7 @@ users_bp = Blueprint("users_bp", __name__, url_prefix="/usuarios")
 
 @users_bp.route("/", methods=["GET"])
 @admin_required
-def get_users():
+def get_usuarios():
     conn = get_db()
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
@@ -30,12 +30,12 @@ def get_users():
             rows = [dict(row) for row in rows_raw]
             return jsonify(rows)
     except Exception as e:
-        current_app.logger.error(f"Error in get_users: {e}")
-        return jsonify({"error": "Error fetching users"}), 500
+        current_app.logger.error(f"Error en get_usuarios: {e}")
+        return jsonify({"error": "Error al obtener usuarios"}), 500
 
 @users_bp.route("/<int:id>", methods=["GET"])
 @admin_required
-def get_user(id):
+def get_usuario(id):
     conn = get_db()
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
@@ -48,14 +48,14 @@ def get_user(id):
             if row_raw:
                 # FIX: Convert to dict to ensure serialization.
                 return jsonify(dict(row_raw))
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": "Usuario no encontrado"}), 404
     except Exception as e:
-        current_app.logger.error(f"Error in get_user: {e}")
-        return jsonify({"error": "Error fetching user"}), 500
+        current_app.logger.error(f"Error en get_usuario: {e}")
+        return jsonify({"error": "Error al obtener usuario"}), 500
 
 @users_bp.route("/", methods=["POST"])
 @admin_required
-def add_user():
+def add_usuario():
     data = request.json
     name    = data.get("nombre")
     email     = data.get("email")
@@ -65,7 +65,7 @@ def add_user():
     role       = data.get("rol", "cliente")
 
     if not name or not email:
-        return jsonify({"error": "Name and email are required"}), 400
+        return jsonify({"error": "Nombre y correo son obligatorios"}), 400
 
     temporary_password = None
     if not password:
@@ -88,7 +88,7 @@ def add_user():
             conn.commit()
 
             response_data = {
-                "message": "User added successfully",
+                "message": "Usuario agregado exitosamente",
                 "id_usuario": new_user['id_usuario'],
                 "email": new_user['email'],
                 "nombre": new_user['nombre']
@@ -100,12 +100,12 @@ def add_user():
             return jsonify(response_data), 201
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in add_user: {e}", exc_info=True)
-        return jsonify({"error": "The email might already be registered"}), 400
+        current_app.logger.error(f"Error en add_usuario: {e}", exc_info=True)
+        return jsonify({"error": "El correo podría estar ya registrado"}), 400
 
 @users_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
-def update_user(id):
+def update_usuario(id):
     data      = request.json
     name    = data.get("nombre")
     email     = data.get("email")
@@ -131,26 +131,26 @@ def update_user(id):
                     WHERE id_usuario=%s AND tenant_id = %s
                 """, (name, email, phone, address, role, id, current_user.tenant_id))
             conn.commit()
-            return jsonify({"message": "User updated successfully"})
+            return jsonify({"message": "Usuario actualizado exitosamente"})
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in update_user: {e}", exc_info=True)
-        return jsonify({"error": "Error updating user"}), 500
+        current_app.logger.error(f"Error en update_usuario: {e}", exc_info=True)
+        return jsonify({"error": "Error al actualizar usuario"}), 500
 
 @users_bp.route("/<int:id>", methods=["DELETE"])
 @admin_required
-def delete_user(id):
+def delete_usuario(id):
     # 🛡️ Protection: Prevent an admin from deleting themselves.
     if current_user.id == id:
-        return jsonify({"error": "You cannot delete your own administrator account"}), 403
+        return jsonify({"error": "No puedes eliminar tu propia cuenta de administrador"}), 403
 
     conn = get_db()
     try:
         with conn.cursor() as cursor:
             cursor.execute("DELETE FROM usuarios WHERE id_usuario=%s AND tenant_id = %s", (id, current_user.tenant_id))
             conn.commit()
-            return jsonify({"message": "User deleted"})
+            return jsonify({"message": "Usuario eliminado"})
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in delete_user: {e}", exc_info=True)
-        return jsonify({"error": "Error deleting user"}), 500
+        current_app.logger.error(f"Error en delete_usuario: {e}", exc_info=True)
+        return jsonify({"error": "Error al eliminar usuario"}), 500

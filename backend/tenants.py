@@ -121,3 +121,69 @@ def delete_tenant(tenant_id):
         conn.rollback()
         current_app.logger.error(f"Error en delete_tenant: {e}")
         return jsonify({"error": "Error deleting the tenant."}), 500
+
+@tenants_bp.route("/<int:tenant_id>/modules", methods=["GET"])
+@login_required
+@superadmin_required
+def get_tenant_modules(tenant_id):
+    """
+    Returns the module configuration for a specific tenant, including
+    which modules are active and their custom labels.
+    """
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute("""
+                SELECT 
+                    m.module_key, 
+                    m.label as default_label, 
+                    m.description,
+                    tms.custom_label,
+                    CASE WHEN tms.module_key IS NOT NULL THEN true ELSE false END as is_active
+                FROM modules m
+                LEFT JOIN tenant_module_settings tms 
+                    ON m.module_key = tms.module_key AND tms.tenant_id = %s
+                ORDER BY m.order_index ASC
+            """, (tenant_id,))
+            modules = [dict(row) for row in cursor.fetchall()]
+            return jsonify(modules)
+    except Exception as e:
+        current_app.logger.error(f"Error en get_tenant_modules: {e}")
+        return jsonify({"error": "Error fetching tenant modules"}), 500
+
+@tenants_bp.route("/<int:tenant_id>/modules", methods=["PUT"])
+@login_required
+@superadmin_required
+def update_tenant_modules(tenant_id):
+    """
+    Updates the active modules and their custom labels for a tenant.
+    """
+    data = request.json
+    modules = data.get('modules', [])
+    
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            # Delete all existing settings for this tenant to replace them
+            cursor.execute("DELETE FROM tenant_module_settings WHERE tenant_id = %s", (tenant_id,))
+            
+            # Prepare new settings to insert (only for active modules)
+            settings_to_insert = []
+            for mod in modules:
+                if mod.get('is_active'):
+                    # Ensure custom_label is not empty string, use None if empty so it falls back to default in UI
+                    custom_label = mod.get('custom_label')
+                    if not custom_label:
+                        custom_label = None
+                    settings_to_insert.append((tenant_id, mod['module_key'], custom_label))
+            
+            if settings_to_insert:
+                args_str = ','.join(cursor.mogrify("(%s,%s,%s)", s).decode('utf-8') for s in settings_to_insert)
+                cursor.execute("INSERT INTO tenant_module_settings (tenant_id, module_key, custom_label) VALUES " + args_str)
+            
+            conn.commit()
+            return jsonify({"message": "Tenant modules updated successfully"})
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Error en update_tenant_modules: {e}", exc_info=True)
+        return jsonify({"error": "Error updating tenant modules"}), 500

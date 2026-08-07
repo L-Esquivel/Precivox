@@ -32,7 +32,7 @@ def get_empaques():
             return jsonify(empaques)
     except Exception as e:
         logger.error(f"Error en get_empaques: {str(e)}")
-        return jsonify({"error": "Error fetching packaging catalog"}), 500
+        return jsonify({"error": "Error al obtener el catálogo de empaques"}), 500
 
 @empaques_bp.route("/", methods=["POST"])
 @admin_required # 💡 FIX: Add decorator so only admins can create packaging.
@@ -42,14 +42,14 @@ def add_empaque():
     try:
         data = request.get_json()
         if not data:
-            return jsonify({"error": "No JSON data received"}), 400
+            return jsonify({"error": "No se recibieron datos JSON"}), 400
 
         nombre = data.get("nombre")
         descripcion = data.get("descripcion", "")
         precio = float(data.get("precio") or 0)
 
         if not nombre:
-            return jsonify({"error": "Name is required"}), 400
+            return jsonify({"error": "El nombre es obligatorio"}), 400
 
         with conn.cursor() as cursor:
             cursor.execute(
@@ -57,11 +57,11 @@ def add_empaque():
                 (nombre, descripcion, precio, tenant_id)
             )
             conn.commit()
-        return jsonify({"message": "Packaging created in catalog"}), 201
+        return jsonify({"message": "Empaque creado exitosamente"}), 201
     except Exception as e:
         conn.rollback() # 💡 FIX: Use the correct connection for rollback and simplify error handling.
         logger.error(f"Error en add_empaque: {e}", exc_info=True)
-        return jsonify({"error": "Internal error creating packaging"}), 500
+        return jsonify({"error": "Error interno al crear el empaque"}), 500
 
 @empaques_bp.route("/<int:id>", methods=["PUT"])
 @admin_required # FIX: Only admins can modify the catalog.
@@ -75,7 +75,7 @@ def update_empaque(id):
         precio = float(data.get("precio") or 0)
 
         if not nombre:
-            return jsonify({"error": "Name is required"}), 400
+            return jsonify({"error": "El nombre es obligatorio"}), 400
 
         with conn.cursor() as cursor:
             # 💡 SAAS-IFICATION: Ensure only packaging from the correct tenant can be updated.
@@ -84,11 +84,11 @@ def update_empaque(id):
                 (nombre, descripcion, precio, id, tenant_id)
             )
             conn.commit()
-        return jsonify({"message": "Packaging updated successfully"})
+        return jsonify({"message": "Empaque actualizado exitosamente"})
     except Exception as e:
         conn.rollback()
         logger.error(f"Error in update_empaque: {e}", exc_info=True)
-        return jsonify({"error": "Error updating packaging"}), 500
+        return jsonify({"error": "Error al actualizar el empaque"}), 500
 
 @empaques_bp.route("/<int:id>", methods=["DELETE"])
 @admin_required # FIX: Only admins can delete from the catalog.
@@ -103,16 +103,16 @@ def delete_empaque(id):
             uso = cursor.fetchone()
             
             if uso and uso['total'] > 0:
-                return jsonify({"error": "Cannot delete: packaging is assigned to products in the Recipes section"}), 400
+                return jsonify({"error": "No se puede eliminar: el empaque está asignado a productos en la sección de Recetas"}), 400
             
             # 💡 SAAS-IFICATION: Ensure only packaging from the correct tenant can be deleted.
             cursor.execute("DELETE FROM empaques WHERE id_empaque=%s AND tenant_id = %s", (id, tenant_id))
             conn.commit()
-            return jsonify({"message": "Packaging deleted from catalog"})
+            return jsonify({"message": "Empaque eliminado exitosamente"})
     except Exception as e:
         conn.rollback()
         logger.error(f"Error in delete_empaque: {e}", exc_info=True)
-        return jsonify({"error": "Error deleting packaging"}), 500
+        return jsonify({"error": "Error al eliminar el empaque"}), 500
 
 # ==================== PACKAGING ASSIGNED TO PRODUCTS ====================
 # These are used specifically within the recipe section of each product
@@ -153,7 +153,7 @@ def get_empaques_producto(producto_id):
             return jsonify({"empaques": items, "costo_total_empaque": costo_total})
     except Exception as e:
         logger.error(f"Error in get_empaques_producto: {str(e)}")
-        return jsonify({"error": "Error fetching product packaging"}), 500
+        return jsonify({"error": "Error al obtener los empaques del producto"}), 500
 
 @empaques_bp.route("/producto/<int:producto_id>", methods=["POST"])
 @login_required
@@ -170,14 +170,14 @@ def add_empaque_producto(producto_id):
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             if not id_empaque:
-                return jsonify({"error": "id_empaque is required"}), 400
+                return jsonify({"error": "id_empaque es obligatorio"}), 400
 
             # 💡 SAAS-IFICATION: Get the packaging price from the correct tenant.
             cursor.execute("SELECT precio FROM empaques WHERE id_empaque=%s AND tenant_id = %s", (id_empaque, current_user.tenant_id))
             row = cursor.fetchone()
             
             if not row:
-                return jsonify({"error": "Packaging not found"}), 404
+                return jsonify({"error": "Empaque no encontrado"}), 404
 
             precio_empaque = float(row["precio"] or 0)
             subtotal = precio_empaque * int(cantidad)
@@ -192,11 +192,11 @@ def add_empaque_producto(producto_id):
         # 💡 FIX: Recalculate the product cost to update it in the 'productos' table.
         calculate_full_cost(producto_id, tenant_id)
 
-        return jsonify({"message": "Packaging assigned to product"}), 201
+        return jsonify({"message": "Empaque asignado al producto"}), 201
     except Exception as e:
         conn.rollback()
         logger.error(f"Error in add_empaque_producto: {str(e)}")
-        return jsonify({"error": "Error assigning packaging"}), 500
+        return jsonify({"error": "Error al asignar el empaque"}), 500
 
 @empaques_bp.route("/producto/item/<int:id>", methods=["DELETE"])
 @login_required
@@ -216,14 +216,14 @@ def delete_empaque_producto(id):
                 cursor.execute("DELETE FROM recetas_empaques WHERE id=%s AND tenant_id = %s", (id, tenant_id))
                 conn.commit()
             else:
-                return jsonify({"message": "Packaging item not found"}), 404
+                return jsonify({"message": "Item de empaque no encontrado"}), 404
 
         # 💡 FIX: If deleted, recalculate the product cost.
         if id_producto:
             calculate_full_cost(id_producto, tenant_id)
 
-        return jsonify({"message": "Packaging removed from product"})
+        return jsonify({"message": "Empaque removido del producto"})
     except Exception as e:
         conn.rollback()
         logger.error(f"Error in delete_empaque_producto: {str(e)}")
-        return jsonify({"error": "Error removing packaging from product"}), 500
+        return jsonify({"error": "Error al remover el empaque del producto"}), 500

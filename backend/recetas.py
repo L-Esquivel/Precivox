@@ -121,7 +121,7 @@ def calculate_full_cost(product_id, tenant_id, pax=None, profit_percentage=None)
 # ================================
 @recetas_bp.route("/recalcular", methods=["POST"])
 @login_required
-def recalculate_costs():
+def recalcular_costos():
     tenant_id = current_user.tenant_id
     data = request.get_json()
     product_id = data.get("id_producto")
@@ -129,7 +129,7 @@ def recalculate_costs():
     profit_percentage = data.get("utilidad_porcentaje")
 
     if not product_id:
-        return jsonify({"error": "product_id is required"}), 400
+        return jsonify({"error": "id_producto es obligatorio"}), 400
 
     try:
         costs = calculate_full_cost(
@@ -139,19 +139,19 @@ def recalculate_costs():
             profit_percentage=float(profit_percentage) if profit_percentage is not None else None
         )
         return jsonify({
-            "message": "Costs recalculated successfully",
+            "message": "Costos recalculados exitosamente",
             "costs": costs
         })
     except Exception as e:
-        logger.error(f"Error in recalculate_costs: {str(e)}")
-        return jsonify({"error": "Error recalculating costs"}), 500
+        logger.error(f"Error en recalcular_costos: {str(e)}")
+        return jsonify({"error": "Error al recalcular costos"}), 500
 
 # ================================
 # Obtener todas las recetas
 # ================================
 @recetas_bp.route("/", methods=["GET"])
 @login_required
-def get_recipes():
+def get_recetas():
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -169,15 +169,15 @@ def get_recipes():
             rows = [dict(row) for row in rows_raw]
             return jsonify(rows)
     except Exception as e:
-        logger.error(f"Error in get_recipes: {str(e)}")
-        return jsonify({"error": "Error fetching recipes"}), 500
+        logger.error(f"Error en get_recetas: {str(e)}")
+        return jsonify({"error": "Error al obtener recetas"}), 500
 
 # ================================
 # Obtener recetas + empaques + costos de un producto
 # ================================
 @recetas_bp.route("/producto/<int:product_id>", methods=["GET"])
 @login_required
-def get_product_recipe_details(product_id):
+def get_detalles_receta_producto(product_id):
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -216,15 +216,15 @@ def get_product_recipe_details(product_id):
                 "costs": costs
             })
     except Exception as e:
-        logger.error(f"Error in get_product_recipe_details: {str(e)}")
-        return jsonify({"error": "Error fetching recipe data"}), 500
+        logger.error(f"Error en get_detalles_receta_producto: {str(e)}")
+        return jsonify({"error": "Error al obtener datos de la receta"}), 500
 
 # ================================
 # CRUD Recetas
 # ================================
 @recetas_bp.route("/", methods=["POST"])
 @login_required
-def add_recipe_ingredient():
+def add_ingrediente_receta():
     tenant_id = current_user.tenant_id
     data = request.get_json()
     product_id = data.get("id_producto")
@@ -232,7 +232,7 @@ def add_recipe_ingredient():
     quantity_needed = data.get("cantidad_necesaria")
 
     if not product_id or not ingredient_id or quantity_needed is None:
-        return jsonify({"error": "Required fields are missing"}), 400
+        return jsonify({"error": "Faltan campos obligatorios"}), 400
     
     conn = get_db()
     try:
@@ -253,22 +253,22 @@ def add_recipe_ingredient():
             conn.commit()
             
             calculate_full_cost(product_id, tenant_id)
-            return jsonify({"message": "Ingredient added to recipe successfully"}), 201
+            return jsonify({"message": "Ingrediente agregado a la receta exitosamente"}), 201
     except Exception as e:
         if conn: conn.rollback()
-        logger.error(f"Error in add_recipe_ingredient: {e}", exc_info=True)
-        return jsonify({"error": "Error adding ingredient to recipe"}), 500
+        logger.error(f"Error en add_ingrediente_receta: {e}", exc_info=True)
+        return jsonify({"error": "Error al agregar ingrediente a la receta"}), 500
 
 @recetas_bp.route("/multiple", methods=["POST"])
 @login_required
-def add_multiple_recipe_ingredients():
+def add_multiples_ingredientes_receta():
     tenant_id = current_user.tenant_id
     data = request.get_json()
     product_id = data.get("id_producto")
     ingredientes = data.get("ingredientes", [])
 
     if not product_id or not ingredientes:
-        return jsonify({"error": "Required data is missing"}), 400
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
 
     conn = get_db()
     try:
@@ -290,15 +290,15 @@ def add_multiple_recipe_ingredients():
                 """, (product_id, ingredient_id, quantity_needed, costo_ingrediente, tenant_id))
             conn.commit()
             calculate_full_cost(product_id, tenant_id)
-            return jsonify({"message": "Ingredients added successfully"}), 201
+            return jsonify({"message": "Ingredientes agregados exitosamente"}), 201
     except Exception as e:
         if conn: conn.rollback()
-        logger.error(f"Error in add_multiple_recipe_ingredients: {e}", exc_info=True)
-        return jsonify({"error": "Error adding ingredients"}), 500
+        logger.error(f"Error en add_multiples_ingredientes_receta: {e}", exc_info=True)
+        return jsonify({"error": "Error al agregar ingredientes"}), 500
 
 @recetas_bp.route("/<int:id>", methods=["PUT"])
 @login_required
-def update_recipe_ingredient(id):
+def update_ingrediente_receta(id):
     tenant_id = current_user.tenant_id
     data = request.get_json()
     product_id = data.get("id_producto")
@@ -323,15 +323,15 @@ def update_recipe_ingredient(id):
             conn.commit()
             if product_id:
                 calculate_full_cost(product_id, tenant_id)
-            return jsonify({"message": "Recipe ingredient updated successfully"})
+            return jsonify({"message": "Ingrediente de receta actualizado exitosamente"})
     except Exception as e:
         if conn: conn.rollback()
-        logger.error(f"Error in update_recipe_ingredient: {e}", exc_info=True)
-        return jsonify({"error": "Error updating recipe ingredient"}), 500
+        logger.error(f"Error en update_ingrediente_receta: {e}", exc_info=True)
+        return jsonify({"error": "Error al actualizar ingrediente de la receta"}), 500
 
 @recetas_bp.route("/<int:id>", methods=["DELETE"])
 @login_required
-def delete_recipe_ingredient(id):
+def delete_ingrediente_receta(id):
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -346,15 +346,15 @@ def delete_recipe_ingredient(id):
             if product_id:
                 calculate_full_cost(product_id, tenant_id)
 
-            return jsonify({"message": "Recipe ingredient deleted successfully"})
+            return jsonify({"message": "Ingrediente de receta eliminado exitosamente"})
     except Exception as e:
         if conn: conn.rollback()
-        logger.error(f"Error in delete_recipe_ingredient: {e}", exc_info=True)
-        return jsonify({"error": "Error deleting recipe ingredient"}), 500
+        logger.error(f"Error en delete_ingrediente_receta: {e}", exc_info=True)
+        return jsonify({"error": "Error al eliminar ingrediente de la receta"}), 500
 
 @recetas_bp.route("/producto/<int:product_id>", methods=["DELETE"])
 @login_required
-def delete_all_product_recipes(product_id):
+def delete_todas_recetas_producto(product_id):
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -362,8 +362,8 @@ def delete_all_product_recipes(product_id):
             cursor.execute("DELETE FROM recetas_ingredientes WHERE id_producto = %s AND tenant_id = %s", (product_id, tenant_id))
             conn.commit()
             calculate_full_cost(product_id, tenant_id)
-            return jsonify({"message": "All recipes for the product were deleted"})
+            return jsonify({"message": "Todas las recetas del producto fueron eliminadas"})
     except Exception as e:
         if conn: conn.rollback()
-        logger.error(f"Error in delete_all_product_recipes: {e}", exc_info=True)
-        return jsonify({"error": "Error deleting product recipes"}), 500
+        logger.error(f"Error en delete_todas_recetas_producto: {e}", exc_info=True)
+        return jsonify({"error": "Error al eliminar las recetas del producto"}), 500

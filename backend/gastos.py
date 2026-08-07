@@ -9,7 +9,7 @@ gastos_bp = Blueprint("gastos_bp", __name__, url_prefix="/gastos")
 
 @gastos_bp.route("/", methods=["GET"])
 @admin_required
-def get_expenses():
+def get_gastos():
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -38,21 +38,21 @@ def get_expenses():
                     expense['fecha'] = expense['fecha'].isoformat()
             return jsonify(expenses)
     except Exception as e:
-        current_app.logger.error(f"Error in get_expenses: {e}")
-        return jsonify({"error": "Error fetching expenses"}), 500
+        current_app.logger.error(f"Error en get_gastos: {e}")
+        return jsonify({"error": "Error al obtener los gastos"}), 500
 
 @gastos_bp.route("/", methods=["POST"])
 @admin_required
-def add_expense():
+def create_gasto():
     data = request.get_json()
     description = data.get("descripcion")
     amount = data.get("monto")
     date = data.get("fecha")
     tenant_id = current_user.tenant_id
-    category = data.get("categoria", "Miscellaneous")
+    category = data.get("categoria", "Varios")
 
     if not description or not amount or not date:
-        return jsonify({"error": "Description, amount, and date are required"}), 400
+        return jsonify({"error": "La descripción, monto y fecha son obligatorios"}), 400
 
     conn = get_db()
     try:
@@ -63,16 +63,16 @@ def add_expense():
                 VALUES (%s, %s, %s, %s, %s)
             """, (description, amount, category, date, tenant_id))
             conn.commit()
-            register_log(f"Registered new expense: {description} for ${amount}")
-            return jsonify({"message": "Expense registered successfully"}), 201
+            register_log(f"Registró un nuevo gasto: {description} por ${amount}")
+            return jsonify({"message": "Gasto registrado exitosamente"}), 201
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in add_expense: {e}")
-        return jsonify({"error": "Error registering expense"}), 500
+        current_app.logger.error(f"Error en create_gasto: {e}")
+        return jsonify({"error": "Error al registrar el gasto"}), 500
 
 @gastos_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
-def update_expense(id):
+def update_gasto(id):
     tenant_id = current_user.tenant_id
     data = request.get_json()
     description = data.get("descripcion")
@@ -81,7 +81,7 @@ def update_expense(id):
     category = data.get("categoria")
 
     if not all([description, amount, date, category]):
-        return jsonify({"error": "Description, amount, date, and category are required"}), 400
+        return jsonify({"error": "La descripción, monto, fecha y categoría son obligatorios"}), 400
 
     conn = get_db()
     try:
@@ -93,19 +93,19 @@ def update_expense(id):
             """, (description, amount, category, date, id, tenant_id))
             
             if cursor.rowcount == 0:
-                return jsonify({"error": "Expense not found or does not belong to your organization"}), 404
+                return jsonify({"error": "Gasto no encontrado o no pertenece a su organización"}), 404
 
             conn.commit()
-            register_log(f"Updated expense ID {id}: {description}")
-            return jsonify({"message": "Expense updated successfully"})
+            register_log(f"Actualizó gasto ID {id}: {description}")
+            return jsonify({"message": "Gasto actualizado exitosamente"})
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in update_expense: {e}")
-        return jsonify({"error": "Error updating expense"}), 500
+        current_app.logger.error(f"Error en update_gasto: {e}")
+        return jsonify({"error": "Error al actualizar el gasto"}), 500
 
 @gastos_bp.route("/<int:id>", methods=["DELETE"])
 @admin_required
-def delete_expense(id):
+def delete_gasto(id):
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -114,12 +114,12 @@ def delete_expense(id):
             cursor.execute("DELETE FROM gastos WHERE id_gasto=%s AND tenant_id = %s", (id, tenant_id))
             
             if cursor.rowcount == 0:
-                return jsonify({"error": "Expense not found or does not belong to your organization"}), 404
+                return jsonify({"error": "Gasto no encontrado o no pertenece a su organización"}), 404
 
             conn.commit()
-            register_log(f"Deleted expense ID {id}")
-            return jsonify({"message": "Expense deleted successfully"})
+            register_log(f"Eliminó gasto ID {id}")
+            return jsonify({"message": "Gasto eliminado exitosamente"})
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in delete_expense: {e}")
-        return jsonify({"error": "Error deleting expense"}), 500
+        current_app.logger.error(f"Error en delete_gasto: {e}")
+        return jsonify({"error": "Error al eliminar el gasto"}), 500

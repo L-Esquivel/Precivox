@@ -32,7 +32,7 @@ class User(UserMixin):
                             COALESCE(tms.custom_label, m.label) AS label
                         FROM
                             modules m
-                        LEFT JOIN
+                        INNER JOIN
                             tenant_module_settings tms ON m.module_key = tms.module_key AND tms.tenant_id = %s ORDER BY m.order_index ASC
                     """, (row['tenant_id'],))
                     # FIX: Explicitly convert results to a list of dictionaries
@@ -71,7 +71,7 @@ class User(UserMixin):
                             COALESCE(tms.custom_label, m.label) AS label
                         FROM
                             modules m
-                        LEFT JOIN
+                        INNER JOIN
                             tenant_module_settings tms ON m.module_key = tms.module_key AND tms.tenant_id = %s ORDER BY m.order_index ASC
                     """, (row['tenant_id'],))
                     # FIX: Explicitly convert results to a list of dictionaries.

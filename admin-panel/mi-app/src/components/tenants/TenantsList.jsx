@@ -15,38 +15,50 @@ const AVAILABLE_MODULES = [
   'menu.recipes',
   'menu.expenses',
   'menu.waste',
-  'menu.storefront'
+  'menu.storefront',
+  'ingredientes',
+  'empaques'
 ];
 
 const ModuleCustomizationModal = ({ tenant, onClose, onSaveSuccess }) => {
   const { t } = useTranslation();
-  const [settings, setSettings] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Initialize settings with tenant's data or empty strings
-    const initialSettings = AVAILABLE_MODULES.reduce((acc, key) => {
-      acc[key] = tenant.module_settings?.[key] || '';
-      return acc;
-    }, {});
-    setSettings(initialSettings);
-  }, [tenant]);
+    const fetchModules = async () => {
+      try {
+        const data = await tenantsAPI.getModules(tenant.id_tenant);
+        setModules(data);
+      } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Error al cargar los módulos' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchModules();
+  }, [tenant.id_tenant]);
 
-  const handleSettingChange = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+  const handleToggle = (moduleKey) => {
+    setModules(prev => prev.map(m => m.module_key === moduleKey ? { ...m, is_active: !m.is_active } : m));
+  };
+
+  const handleLabelChange = (moduleKey, newLabel) => {
+    setModules(prev => prev.map(m => m.module_key === moduleKey ? { ...m, custom_label: newLabel } : m));
   };
 
   const handleSave = async () => {
-    setLoading(true);
+    setSaving(true);
     try {
-      await tenantsAPI.update(tenant.id_tenant, { module_settings: settings });
-      onSaveSuccess({ ...tenant, module_settings: settings });
+      await tenantsAPI.updateModules(tenant.id_tenant, { modules });
       Swal.fire({ icon: 'success', title: t('common.save'), showConfirmButton: false, timer: 1500 });
+      onSaveSuccess(); // Trigger parent refresh to get updated tenant state if needed
       onClose();
     } catch (error) {
       Swal.fire({ icon: 'error', title: 'Oops...', text: t('tenants.errors.save_settings') });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -60,32 +72,47 @@ const ModuleCustomizationModal = ({ tenant, onClose, onSaveSuccess }) => {
           </div>
           <div className="modal-body">
             <p className="mb-4">{t('tenants.customize_desc')}</p>
-            <div className="row g-3">
-              {AVAILABLE_MODULES.map(moduleKey => (
-                <div className="col-md-6" key={moduleKey}>
-                  <div className="form-group">
-                    {/* 💡 FIX: Use the new translation key and provide a fallback to the module key itself. */}
-                    {/* This ensures that a descriptive label is always shown, solving the "undefined" issue. */}
-                    <label htmlFor={`setting-${moduleKey}`} className="form-label text-muted small">
-                      {t('tenants.customize_label', { defaultModuleName: t(moduleKey) || moduleKey })}
-                    </label>
-                    <input
-                      type="text"
-                      id={`setting-${moduleKey}`}
-                      className="form-control"
-                      placeholder={t(moduleKey) || moduleKey} // Fallback to key for placeholder
-                      value={settings[moduleKey] || ''}
-                      onChange={(e) => handleSettingChange(moduleKey, e.target.value)}
-                    />
+            {loading ? (
+              <div className="text-center"><div className="spinner-border text-primary" role="status"></div></div>
+            ) : (
+              <div className="row g-3">
+                {modules.map(mod => (
+                  <div className="col-md-6" key={mod.module_key}>
+                    <div className="card h-100 shadow-sm border-0 bg-light">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <label className="form-check-label fw-bold" htmlFor={`toggle-${mod.module_key}`}>
+                            {mod.default_label}
+                          </label>
+                          <div className="form-check form-switch">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`toggle-${mod.module_key}`}
+                              checked={mod.is_active}
+                              onChange={() => handleToggle(mod.module_key)}
+                            />
+                          </div>
+                        </div>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder={`Personalizar (Por defecto: ${mod.default_label})`}
+                          value={mod.custom_label || ''}
+                          onChange={(e) => handleLabelChange(mod.module_key, e.target.value)}
+                          disabled={!mod.is_active}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
-            <button type="button" className="btn btn-primary" onClick={handleSave} disabled={loading}>
-              {loading && <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>}
+            <button type="button" className="btn btn-primary" onClick={handleSave} disabled={saving || loading}>
+              {saving && <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>}
               {t('common.save')}
             </button>
           </div>

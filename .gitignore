@@ -62,3 +62,4 @@ AI_INSTRUCTIONS.md
 
 # Ignorar carpetas de assets compartidos o temporales
 shared-assets/
+.aider*

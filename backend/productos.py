@@ -24,13 +24,13 @@ cloudinary.config(
 # ==========================================
 @productos_bp.route("/upload-image", methods=["POST"])
 @admin_required
-def upload_image():
+def upload_imagen():
     if 'imagen' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({"error": "No hay archivo"}), 400
 
     file = request.files['imagen']
     if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        return jsonify({"error": "No se seleccionó archivo"}), 400
 
     try:
         # 💡 SAAS-IFICATION: Isolate images by tenant in Cloudinary.
@@ -47,13 +47,13 @@ def upload_image():
         register_log(f"Uploaded new image to the cloud: {file.filename}")
         
         return jsonify({
-            "message": "Image successfully uploaded to the cloud ✅",
+            "message": "Imagen subida exitosamente a la nube ✅",
             "filename": secure_url
         }), 201
 
     except Exception as e:
         current_app.logger.error(f"Cloudinary Error: {str(e)}")
-        return jsonify({"error": "Failed to upload to cloud"}), 500
+        return jsonify({"error": "Error al subir a la nube"}), 500
 
 # ==========================================
 # PRODUCT MANAGEMENT
@@ -61,7 +61,7 @@ def upload_image():
 
 @productos_bp.route("/", methods=["GET"])
 @login_required
-def get_products():
+def get_productos():
     # 🔵 POSTGRESQL CONNECTION PATTERN
     tenant_id = current_user.tenant_id
     conn = get_db()
@@ -79,12 +79,12 @@ def get_products():
             products = [dict(row) for row in products_raw]
             return jsonify(products)
     except Exception as e:
-        current_app.logger.error(f"Error in get_products: {e}")
-        return jsonify({"error": "Error fetching products"}), 500
+        current_app.logger.error(f"Error en get_productos: {e}")
+        return jsonify({"error": "Error al obtener productos"}), 500
 
 @productos_bp.route("/", methods=["POST"])
 @admin_required
-def add_product():
+def add_producto():
     data = request.json
     nombre = data.get("nombre")
     tenant_id = current_user.tenant_id
@@ -103,15 +103,15 @@ def add_product():
             # 🛡️ AUDIT: Creation log
             register_log(f"Created product: {nombre}")
             
-            return jsonify({"message": "Product created"}), 201
+            return jsonify({"message": "Producto creado"}), 201
     except Exception as e:
         conn.rollback() # 🔵 Rollback on the connection
-        current_app.logger.error(f"Error in add_product: {e}")
-        return jsonify({"error": "Error creating product"}), 500
+        current_app.logger.error(f"Error en add_producto: {e}")
+        return jsonify({"error": "Error al crear producto"}), 500
 
 @productos_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
-def update_product(id):
+def update_producto(id):
     data = request.json
     nombre = data.get("nombre")
     tenant_id = current_user.tenant_id
@@ -132,15 +132,15 @@ def update_product(id):
             # calcular_costo_completo(id, tenant_id) # This function must also be migrated
             
             register_log(f"Updated product ID {id}: {nombre}")
-            return jsonify({"message": "Product updated"})
+            return jsonify({"message": "Producto actualizado"})
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in update_product: {e}")
-        return jsonify({"error": "Error updating product"}), 500
+        current_app.logger.error(f"Error en update_producto: {e}")
+        return jsonify({"error": "Error al actualizar producto"}), 500
 
 @productos_bp.route("/<int:id>", methods=["DELETE"])
 @admin_required
-def delete_product(id):
+def delete_producto(id):
     tenant_id = current_user.tenant_id
     conn = get_db()
     try:
@@ -152,14 +152,14 @@ def delete_product(id):
             # 🛡️ AUDIT: Deletion log
             register_log(f"Deleted product ID {id}")
             
-            return jsonify({"message": "Deleted"})
+            return jsonify({"message": "Eliminado"})
     except Exception as e:
         conn.rollback()
-        current_app.logger.error(f"Error in delete_product: {e}")
-        return jsonify({"error": "Error deleting product"}), 500
+        current_app.logger.error(f"Error en delete_producto: {e}")
+        return jsonify({"error": "Error al eliminar producto"}), 500
 
 @productos_bp.route("/public", methods=["GET"])
-def get_public_products():
+def get_productos_publicos():
     # ⚠️ MULTI-TENANT SECURITY WARNING:
     # This endpoint is for the public landing page. In a multi-tenant system,
     # we cannot simply return all products. We need to know which tenant's
@@ -179,5 +179,5 @@ def get_public_products():
             products = cursor.fetchall()
             return jsonify({"success": True, "productos": products})
     except Exception as e:
-        current_app.logger.error(f"Error in get_public_products: {e}")
-        return jsonify({"error": "Error fetching public products"}), 500
+        current_app.logger.error(f"Error en get_productos_publicos: {e}")
+        return jsonify({"error": "Error al obtener productos públicos"}), 500

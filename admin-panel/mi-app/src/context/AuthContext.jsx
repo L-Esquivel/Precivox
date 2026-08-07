@@ -25,6 +25,41 @@ export const AuthProvider = ({ children }) => {
         const data = response.data; // The actual payload from the server
         if (data && data.usuario && data.usuario.rol !== 'cliente') {
           setUser(data.usuario);
+          
+          // 💡 WHITE-LABELING: Inyectar terminología personalizada del cliente en i18next (al recargar página)
+          if (data.usuario.module_settings) {
+            import('../i18n').then(({ default: i18n }) => {
+              const moduleKeyToI18n = {
+                'usuarios': [{ type: 'exact', key: 'menu.users' }, { type: 'exact', key: 'usersList.title', prefix: 'Gestión de ' }],
+                'productos': [{ type: 'exact', key: 'menu.products' }, { type: 'exact', key: 'productsList.title', prefix: 'Gestión de ' }],
+                'pedidos': [{ type: 'exact', key: 'menu.orders' }, { type: 'exact', key: 'ordersList.title', prefix: 'Gestión de ' }],
+                'insumos': [{ type: 'exact', key: 'menu.supplies' }, { type: 'exact', key: 'suppliesPage.title', prefix: 'Gestión de ' }],
+                'recetas': [{ type: 'exact', key: 'menu.recipes' }, { type: 'exact', key: 'recipes.title', prefix: 'Análisis de ' }],
+                'gastos': [{ type: 'exact', key: 'menu.expenses' }, { type: 'exact', key: 'expenses.title', prefix: 'Gestión de ' }],
+                'merma': [{ type: 'exact', key: 'menu.waste' }, { type: 'exact', key: 'waste.title', prefix: 'Gestión de ' }],
+                'ingredientes': [
+                  { type: 'exact', key: 'suppliesPage.ingredients_title' },
+                  { type: 'exact', key: 'ingredientsList.title', prefix: 'Gestión de ' },
+                  { type: 'exact', key: 'recipes.ingredients_title' }
+                ],
+                'empaques': [
+                  { type: 'exact', key: 'suppliesPage.packaging_title' },
+                  { type: 'exact', key: 'packagingList.title', prefix: 'Catálogo de ' },
+                  { type: 'exact', key: 'recipes.packaging_title' }
+                ]
+              };
+              
+              data.usuario.module_settings.forEach(mod => {
+                const mappings = moduleKeyToI18n[mod.module_key];
+                if (mappings && mod.label) {
+                  mappings.forEach(mapping => {
+                    const finalString = mapping.prefix ? `${mapping.prefix}${mod.label}` : mod.label;
+                    i18n.addResource('es', 'translation', mapping.key, finalString);
+                  });
+                }
+              });
+            });
+          }
         } else {
           // If the user is a customer or data is invalid, clear the session
           setUser(null);
@@ -51,6 +86,42 @@ export const AuthProvider = ({ children }) => {
       // The login is only successful if we receive a user object with an 'admin' or 'superadmin' role.
       if (data && data.usuario && (data.usuario.rol === 'admin' || data.usuario.rol === 'superadmin')) {
         setUser(data.usuario);
+        
+        // 💡 WHITE-LABELING: Inyectar terminología personalizada del cliente en i18next
+        if (data.usuario.module_settings) {
+          import('../i18n').then(({ default: i18n }) => {
+            const moduleKeyToI18n = {
+              'usuarios': [{ type: 'exact', key: 'menu.users' }, { type: 'exact', key: 'usersList.title', prefix: 'Gestión de ' }],
+              'productos': [{ type: 'exact', key: 'menu.products' }, { type: 'exact', key: 'productsList.title', prefix: 'Gestión de ' }],
+              'pedidos': [{ type: 'exact', key: 'menu.orders' }, { type: 'exact', key: 'ordersList.title', prefix: 'Gestión de ' }],
+              'insumos': [{ type: 'exact', key: 'menu.supplies' }, { type: 'exact', key: 'suppliesPage.title', prefix: 'Gestión de ' }],
+              'recetas': [{ type: 'exact', key: 'menu.recipes' }, { type: 'exact', key: 'recipes.title', prefix: 'Análisis de ' }],
+              'gastos': [{ type: 'exact', key: 'menu.expenses' }, { type: 'exact', key: 'expenses.title', prefix: 'Gestión de ' }],
+              'merma': [{ type: 'exact', key: 'menu.waste' }, { type: 'exact', key: 'waste.title', prefix: 'Gestión de ' }],
+              'ingredientes': [
+                { type: 'exact', key: 'suppliesPage.ingredients_title' },
+                { type: 'exact', key: 'ingredientsList.title', prefix: 'Gestión de ' },
+                { type: 'exact', key: 'recipes.ingredients_title' }
+              ],
+              'empaques': [
+                { type: 'exact', key: 'suppliesPage.packaging_title' },
+                { type: 'exact', key: 'packagingList.title', prefix: 'Catálogo de ' },
+                { type: 'exact', key: 'recipes.packaging_title' }
+              ]
+            };
+            
+            data.usuario.module_settings.forEach(mod => {
+              const mappings = moduleKeyToI18n[mod.module_key];
+              if (mappings && mod.label) {
+                mappings.forEach(mapping => {
+                  const finalString = mapping.prefix ? `${mapping.prefix}${mod.label}` : mod.label;
+                  i18n.addResource('es', 'translation', mapping.key, finalString);
+                });
+              }
+            });
+          });
+        }
+        
         return { success: true };
       } else {
         // If the user is a 'cliente', throw a specific role denial error.

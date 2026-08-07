@@ -7,14 +7,14 @@ const Sidebar = ({ onShowSupport }) => {
   const { user } = useAuth();
   const { t } = useTranslation();
   // This is the original logic from your App.jsx, which is crucial.
-  const labelToTKey = {
-    'Usuarios': 'menu.users',
-    'Productos': 'menu.products',
-    'Pedidos': 'menu.orders',
-    'Insumos': 'menu.supplies',
-    'Recetas': 'menu.recipes',
-    'Gastos': 'menu.expenses',
-    'Merma': 'menu.waste',
+  const moduleKeyToTKey = {
+    'usuarios': 'menu.users',
+    'productos': 'menu.products',
+    'pedidos': 'menu.orders',
+    'insumos': 'menu.supplies',
+    'recetas': 'menu.recipes',
+    'gastos': 'menu.expenses',
+    'merma': 'menu.waste',
   };
 
   // FIX: This object maps the module keys from the database (in Spanish)
@@ -60,7 +60,7 @@ const Sidebar = ({ onShowSupport }) => {
                 if (!path) return null; // Don't render a link if the path is not defined
                 return (
                   <NavLink to={path} className={getNavLinkClass}>
-                    {module.icon} {t(labelToTKey[module.label] || module.label)}
+                    {module.icon} {t(moduleKeyToTKey[module.module_key] || module.label)}
                   </NavLink>
                 );
               })()}</li>

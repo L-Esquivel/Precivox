@@ -42,7 +42,7 @@ def get_detalles():
             return jsonify(detalles)
     except Exception as e:
         logger.error(f"Error en get_detalles: {e}", exc_info=True)
-        return jsonify({"error": "Error fetching order details"}), 500
+        return jsonify({"error": "Error al obtener los detalles del pedido"}), 500
 
 
 # ========================================
@@ -70,7 +70,7 @@ def get_detalle(id):
             detalle = cursor.fetchone()
 
             if not detalle:
-                return jsonify({"error": "Detail not found"}), 404
+                return jsonify({"error": "Detalle no encontrado"}), 404
 
             detalle["precio_unitario"] = float(detalle.get("precio_unitario", 0) or 0)
             detalle["subtotal"] = float(detalle.get("subtotal", 0) or 0)
@@ -78,7 +78,7 @@ def get_detalle(id):
             return jsonify(detalle)
     except Exception as e:
         logger.error(f"Error en get_detalle: {e}", exc_info=True)
-        return jsonify({"error": "Error fetching order detail"}), 500
+        return jsonify({"error": "Error al obtener el detalle del pedido"}), 500
 
 
 # ========================================
@@ -130,7 +130,7 @@ def get_detalles_por_pedido(pedido_id):
             return jsonify(details)
     except Exception as e:
         logger.error(f"Error en get_detalles_por_pedido: {e}", exc_info=True)
-        return jsonify({"error": "Error fetching order details"}), 500
+        return jsonify({"error": "Error al obtener los detalles del pedido"}), 500
 
 
 # ========================================
@@ -152,7 +152,7 @@ def create_detalle():
 
         # Validate required fields
         if not all([pedido_id, producto_id, cantidad, precio_unitario, subtotal]):
-            return jsonify({"error": "All fields are required"}), 400
+            return jsonify({"error": "Todos los campos son obligatorios"}), 400
 
         with conn.cursor() as cursor:
             cursor.execute("""
@@ -164,13 +164,13 @@ def create_detalle():
             conn.commit()
 
             return jsonify({
-                "message": "Order detail created successfully",
+                "message": "Detalle del pedido creado exitosamente",
                 "id_detalle": detalle_id
             }), 201
     except Exception as e:
         conn.rollback()
         logger.error(f"Error en create_detalle: {e}", exc_info=True)
-        return jsonify({"error": "Error creating order detail"}), 500
+        return jsonify({"error": "Error al crear el detalle del pedido"}), 500
 
 
 # ========================================
@@ -194,11 +194,11 @@ def update_detalle(id):
                 WHERE id_detalle=%s AND tenant_id = %s
             """, (cantidad, precio_unitario, subtotal, id, tenant_id))
             conn.commit()
-            return jsonify({"message": "Detail updated successfully"})
+            return jsonify({"message": "Detalle actualizado exitosamente"})
     except Exception as e:
         conn.rollback()
         logger.error(f"Error en update_detalle: {e}", exc_info=True)
-        return jsonify({"error": "Error updating detail"}), 500
+        return jsonify({"error": "Error al actualizar el detalle"}), 500
 
 
 # ========================================
@@ -214,9 +214,9 @@ def delete_detalle(id):
             cursor.execute("DELETE FROM detalle_pedidos WHERE id_detalle = %s AND tenant_id = %s", (id, tenant_id))
             conn.commit()
             if cursor.rowcount == 0:
-                return jsonify({"error": "Order detail not found or does not belong to your organization"}), 404
-            return jsonify({"message": "Order detail deleted successfully"})
+                return jsonify({"error": "Detalle del pedido no encontrado o no pertenece a su organización"}), 404
+            return jsonify({"message": "Detalle del pedido eliminado exitosamente"})
     except Exception as e:
         conn.rollback()
         logger.error(f"Error in delete_detalle: {e}", exc_info=True)
-        return jsonify({"error": "Error deleting order detail"}), 500
+        return jsonify({"error": "Error al eliminar el detalle del pedido"}), 500
