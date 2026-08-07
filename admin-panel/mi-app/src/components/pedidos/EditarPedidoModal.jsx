@@ -16,7 +16,11 @@ const EditarPedidoModal = ({ pedido, productos, onSubmit, onClose }) => {
       try {
         setLoading(true);
         const data = await pedidosService.getOrderDetails(pedido.id_pedido);
-        setOrderDetails(data.map(d => ({ ...d, cantidad: parseInt(d.cantidad) })));
+        setOrderDetails(data.map(d => ({ 
+          ...d, 
+          id_producto: d.producto_id, 
+          cantidad: parseInt(d.cantidad) 
+        })));
       } catch (err) {
         setError(t('editOrderModal.errors.load_details'));
         console.error(err);
