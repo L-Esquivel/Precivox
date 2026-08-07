@@ -185,7 +185,7 @@ def get_detalles_receta_producto(product_id):
             # Ingredientes
             cursor.execute("""
                 SELECT ri.id, ri.id_ingrediente, ri.cantidad_necesaria,
-                       i.nombre AS ingrediente, i.unidad_medida, i.costo_por_unidad,
+                       i.nombre AS ingrediente, i.unidad AS unidad_medida, i.costo_unitario AS costo_por_unidad,
                        ri.costo_ingrediente
                 FROM recetas_ingredientes ri
                 LEFT JOIN ingredientes i ON ri.id_ingrediente = i.id_ingrediente AND i.tenant_id = %s
@@ -238,12 +238,12 @@ def add_ingrediente_receta():
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             # Obtener costo del ingrediente
-            cursor.execute("SELECT costo_por_unidad FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (ingredient_id, tenant_id))
+            cursor.execute("SELECT costo_unitario FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (ingredient_id, tenant_id))
             ingrediente = cursor.fetchone()
             if not ingrediente:
                 return jsonify({"error": "Ingrediente no encontrado"}), 404
             
-            costo_unitario = float(ingrediente.get('costo_por_unidad') or 0)
+            costo_unitario = float(ingrediente.get('costo_unitario') or 0)
             costo_ingrediente = costo_unitario * float(quantity_needed)
 
             cursor.execute("""
@@ -277,11 +277,11 @@ def add_multiples_ingredientes_receta():
                 ingredient_id = ing.get("id_ingrediente")
                 quantity_needed = ing.get("cantidad_necesaria")
 
-                cursor.execute("SELECT costo_por_unidad FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (ingredient_id, tenant_id))
+                cursor.execute("SELECT costo_unitario FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (ingredient_id, tenant_id))
                 ing_data = cursor.fetchone()
                 if not ing_data: continue # Opcional: manejar error si un ingrediente no existe
 
-                costo_unitario = float(ing_data.get('costo_por_unidad') or 0)
+                costo_unitario = float(ing_data.get('costo_unitario') or 0)
                 costo_ingrediente = costo_unitario * float(quantity_needed)
 
                 cursor.execute("""
@@ -308,11 +308,11 @@ def update_ingrediente_receta(id):
     conn = get_db()
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT costo_por_unidad FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (ingredient_id, tenant_id))
+            cursor.execute("SELECT costo_unitario FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (ingredient_id, tenant_id))
             ing_data = cursor.fetchone()
             if not ing_data: return jsonify({"error": "Ingrediente no encontrado"}), 404
 
-            costo_unitario = float(ing_data.get('costo_por_unidad') or 0)
+            costo_unitario = float(ing_data.get('costo_unitario') or 0)
             costo_ingrediente = costo_unitario * float(quantity_needed)
 
             cursor.execute("""
