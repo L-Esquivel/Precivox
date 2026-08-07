@@ -97,6 +97,8 @@ CREATE TABLE productos (
     precio_venta DECIMAL(10,2),
     imagen VARCHAR(255),
     activo BOOLEAN DEFAULT TRUE,
+    stock INT DEFAULT 0,
+    controla_stock BOOLEAN DEFAULT FALSE,
     utilidad_porcentaje DECIMAL(5,2) DEFAULT 40.00,
     pax INT DEFAULT 1,
     costo_produccion DECIMAL(10,2) DEFAULT 0.00,
