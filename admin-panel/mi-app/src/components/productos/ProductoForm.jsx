@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://sweetland-by-anny-production.up.railway.app';
 
-const ProductoForm = ({ producto, onSubmit, onClose }) => {
+const ProductoForm = ({ producto, existingCategories = [], onSubmit, onClose }) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     nombre: '',
-    categoria: 'tortas',
+    categoria: '',
     descripcion: '',
     precio: '',
     imagen: '',
@@ -31,7 +31,7 @@ const ProductoForm = ({ producto, onSubmit, onClose }) => {
     if (producto) {
       setFormData({
         nombre: producto.nombre || '',
-        categoria: producto.categoria || 'tortas',
+        categoria: producto.categoria || '',
         descripcion: producto.descripcion || '',
         precio: producto.precio || '',
         imagen: producto.imagen || '',
@@ -123,11 +123,21 @@ const ProductoForm = ({ producto, onSubmit, onClose }) => {
                 </div>
                 <div className="col-md-4">
                   <label className="form-label fw-bold">{t('productsList.form.category')}</label>
-                  <select name="categoria" className="form-select" value={formData.categoria} onChange={handleChange}>
-                    <option value="tortas">{t('productForm.category.cakes')}</option>
-                    <option value="postres">{t('productForm.category.desserts')}</option>
-                    <option value="detalles">{t('productForm.category.details')}</option>
-                  </select>
+                  <input 
+                    type="text" 
+                    name="categoria" 
+                    className="form-control" 
+                    list="categorias-list"
+                    value={formData.categoria} 
+                    onChange={handleChange} 
+                    required 
+                    placeholder="Ej: Postres, Herramientas..."
+                  />
+                  <datalist id="categorias-list">
+                    {existingCategories.map((cat, idx) => (
+                      <option key={idx} value={cat} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="col-12">

@@ -136,6 +136,7 @@ const ProductosList = () => {
       {showModal && (
         <ProductoForm
           producto={editingProduct}
+          existingCategories={[...new Set(products.map(p => p.categoria).filter(Boolean))]}
           onSubmit={handleSubmit}
           onClose={() => setShowModal(false)}
         />
