@@ -20,10 +20,35 @@ def process_stock_deduction(cursor, order_id, tenant_id):
         cursor.execute("SELECT producto_id, cantidad FROM detalle_pedidos WHERE pedido_id = %s AND tenant_id = %s", (order_id, tenant_id))
         items = cursor.fetchall()
         for item in items:
+            producto_id = item['producto_id']
+            cantidad_vendida = float(item['cantidad'])
+
+            # 1. Deduct Product Stock (if applies)
             cursor.execute("""
                 UPDATE productos SET stock = stock - %s 
                 WHERE id_producto = %s AND controla_stock = TRUE AND tenant_id = %s
-            """, (item['cantidad'], item['producto_id'], tenant_id))
+            """, (cantidad_vendida, producto_id, tenant_id))
+
+            # 2. Deduct Ingredients based on Recipe
+            cursor.execute("SELECT id_ingrediente, cantidad_necesaria FROM recetas_ingredientes WHERE id_producto = %s AND tenant_id = %s", (producto_id, tenant_id))
+            ingredientes_receta = cursor.fetchall()
+            for ing in ingredientes_receta:
+                cantidad_a_deducir = float(ing['cantidad_necesaria']) * cantidad_vendida
+                cursor.execute("""
+                    UPDATE ingredientes SET cantidad = cantidad - %s 
+                    WHERE id_ingrediente = %s AND tenant_id = %s
+                """, (cantidad_a_deducir, ing['id_ingrediente'], tenant_id))
+
+            # 3. Deduct Packaging based on Recipe
+            cursor.execute("SELECT id_empaque, cantidad FROM recetas_empaques WHERE id_producto = %s AND tenant_id = %s", (producto_id, tenant_id))
+            empaques_receta = cursor.fetchall()
+            for emp in empaques_receta:
+                cantidad_a_deducir = float(emp['cantidad']) * cantidad_vendida
+                cursor.execute("""
+                    UPDATE empaques SET cantidad = cantidad - %s 
+                    WHERE id_empaque = %s AND tenant_id = %s
+                """, (cantidad_a_deducir, emp['id_empaque'], tenant_id))
+
     except Exception as e:
         logger.error(f"Error deducting stock: {e}")
         # Propagate the exception so the calling function can perform a rollback.

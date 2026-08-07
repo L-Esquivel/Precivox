@@ -67,12 +67,12 @@ def create_merma():
                 unit_cost = item.get('precio', 0)
                 description = f"Producto: {item.get('nombre')}"
             elif id_ingrediente:
-                # FIX: The column name is 'costo_por_unidad', not 'costo_unitario'.
-                # This fixes a bug where the cost of ingredient waste was always 0.
-                cursor.execute("SELECT nombre, costo_por_unidad FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (id_ingrediente, tenant_id))
+                # FIX: The column name is 'costo_unitario', not 'costo_por_unidad'.
+                # This fixes a bug where the cost of ingredient waste was always 0 or throwing a 500 error.
+                cursor.execute("SELECT nombre, costo_unitario FROM ingredientes WHERE id_ingrediente = %s AND tenant_id = %s", (id_ingrediente, tenant_id))
                 item = cursor.fetchone()
                 if not item: return jsonify({"error": "Ingrediente no encontrado"}), 404
-                unit_cost = item.get('costo_por_unidad', 0)
+                unit_cost = item.get('costo_unitario', 0)
                 description = f"Ingrediente: {item.get('nombre')}"
 
             loss_cost = float(unit_cost or 0) * float(cantidad)
